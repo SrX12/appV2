@@ -1,645 +1,105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Chiringuito TPV">
-<meta name="theme-color" content="#0f172a">
-<title>Chiringuito TPV</title>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
-<style>
-:root{
---bg:#0f172a;--bg2:#1e293b;--card:#1e293b;--card2:#334155;
---accent:#f43f5e;--accent2:#fb7185;--green:#10b981;--yellow:#f59e0b;
---red:#ef4444;--blue:#38bdf8;--text:#f8fafc;--muted:#94a3b8;
---border:rgba(148,163,184,.25);--input-bg:rgba(148,163,184,.08);
---shadow:0 8px 32px rgba(0,0,0,.4);--nav-bg:rgba(15,23,42,.98);
---radius:18px;--radius-sm:12px;
-}
-[data-theme="light"]{--bg:#f8fafc;--bg2:#ffffff;--card:#ffffff;--card2:#f1f5f9;--accent:#e11d48;--green:#059669;--yellow:#d97706;--text:#0f172a;--muted:#475569;--border:rgba(15,23,42,.15);--input-bg:#f1f5f9;--shadow:0 8px 32px rgba(0,0,0,.1);}
-[data-theme="beach"]{--bg:#0c1329;--bg2:#1a2344;--card:#1e2a4f;--card2:#2a3666;--accent:#ff6b35;--green:#06d6a0;--yellow:#ffd166;--text:#e0f2ff;--muted:#7dd3fc;--border:rgba(124,211,252,.25);}
-[data-theme="sunset"]{--bg:#1c1917;--bg2:#292524;--card:#292524;--card2:#44403c;--accent:#f97316;--green:#84cc16;--yellow:#fde047;--text:#fafaf9;--muted:#a8a29e;}
-[data-theme="ocean"]{--bg:#0a1625;--bg2:#132b4a;--card:#1a3a5f;--card2:#23507d;--accent:#22d3ee;--green:#4ade80;--yellow:#fde047;--text:#e0f2fe;--muted:#67e8f9;}
-[data-theme="neon"]{--bg:#0a0a0a;--bg2:#1a1a2e;--card:#16213e;--card2:#2a2a4a;--accent:#ff00ff;--green:#00ff9f;--yellow:#ffff00;--text:#f0f0ff;--muted:#a0a0ff;--border:#ff00ff33;}
-
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer;border:none;background:none}
-input,select{outline:none}
-
-.hdr{position:sticky;top:0;z-index:80;padding:env(safe-area-inset-top) 16px 10px;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.hdr-title{font-weight:800;font-size:1.18rem}
-.hdr-sub{font-size:.7rem;color:var(--muted)}
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--nav-bg);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{flex:1;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:.65rem;font-weight:600;transition:color .2s;position:relative}
-.nav-btn.on{color:var(--accent)}
-.nav-btn.on::after{content:'';position:absolute;top:2px;left:22%;right:22%;height:3px;background:var(--accent);border-radius:3px}
-.pages{flex:1;overflow-y:auto;padding:14px;padding-bottom:90px}
-.pg{display:none}
-.pg.on{display:block;animation:fadeIn .25s ease}
-@keyframes fadeIn{from{opacity:0.6;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-.glass{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
-.row{display:flex;gap:8px;align-items:center}
-.row-between{display:flex;justify-content:space-between;align-items:center}
-.center{text-align:center}
-.mt12{margin-top:12px}.mb12{margin-bottom:12px}
-.pg-title{font-size:1.35rem;font-weight:800;margin-bottom:12px}
-.muted{color:var(--muted)}.small{font-size:.78rem}
-.bold{font-weight:800}.accent{color:var(--accent)}.green{color:var(--green)}
-
-.btn{
-display:inline-flex;align-items:center;justify-content:center;gap:6px;
-border-radius:12px;padding:11px 16px;font-weight:700;font-size:.88rem;
-transition:all .15s;
-}
-.btn:active{transform:scale(0.94)}
-.btn-accent{background:var(--accent);color:white}
-.btn-green{background:var(--green);color:white}
-.btn-red{background:var(--red);color:white}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
-
-.ipt{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--text)}
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{white-space:nowrap;padding:8px 16px;border-radius:999px;background:var(--card);border:1.5px solid var(--border);color:var(--muted);font-size:.82rem;font-weight:600;transition:all .2s}
-.tab.on{background:var(--accent);color:white;border-color:var(--accent)}
-
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pcard{
-position:relative;background:var(--card);border:1.5px solid transparent;
-border-radius:14px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;
-text-align:center;transition:all .2s;user-select:none;min-height:110px;
-overflow:hidden;
-}
-.pcard::after{
-content:'';position:absolute;inset:0;background:radial-gradient(circle at center, rgba(255,255,255,0.25) 0%, transparent 70%);
-opacity:0;transition:opacity .3s;pointer-events:none;
-}
-.pcard:active{
-transform:scale(0.92);
-border-color:var(--accent);
-box-shadow:0 0 0 8px rgba(244,63,94,.15);
-}
-.pcard:active::after{opacity:1}
-.pcard-emoji{font-size:2.1rem;transition:transform .3s}
-.pcard:active .pcard-emoji{transform:scale(1.25)}
-.pcard-name{font-size:.75rem;color:var(--muted);margin:6px 0 2px;line-height:1.2}
-.pcard-price{font-weight:800;color:var(--accent);font-size:.9rem}
-
-.cart{background:var(--card);border-top:3px solid var(--accent);border-radius:20px 20px 0 0;margin:16px -14px 0;padding:16px}
-.cart-item{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
-.cart-qty{display:flex;align-items:center;gap:10px}
-.qty-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.1rem}
-.cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--border)}
-.cart-total-amount{font-size:1.5rem;font-weight:900;color:var(--green)}
-
-.pay-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.pay-btn{padding:12px 8px;border:2px solid var(--border);border-radius:12px;background:var(--card2);text-align:center;transition:all .2s}
-.pay-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(244,63,94,.1)}
-
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);z-index:200;display:none;align-items:flex-end;justify-content:center}
-.overlay.on{display:flex}
-.modal{width:100%;max-width:500px;background:var(--bg2);border-radius:24px 24px 0 0;padding:20px;max-height:88vh;overflow-y:auto}
-.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.modal-title{font-size:1.2rem;font-weight:800}
-
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-80px);z-index:300;background:var(--card2);border:1px solid var(--border);padding:12px 20px;border-radius:999px;font-weight:600;box-shadow:var(--shadow);transition:all .3s;opacity:0}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.toast.ok{border-color:var(--green)}
-.toast.err{border-color:var(--red)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Chiringuito TPV">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icon.svg">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    <title>Chiringuito TPV</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        /* CSS INTEGRADO - Estilo fluido y moderno */
+        :root{--bg:#0f172a;--card:#1e293b;--accent:#f43f5e;--green:#10b981;--text:#f8fafc;--muted:#94a3b8;--border:rgba(148,163,184,.2);}
+        [data-theme="beach"]{--bg:#0a0e27;--card:#1e2540;--accent:#ff6b35;}
+        body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;height:100vh;display:flex;flex-direction:column}
+        .hdr{padding:16px;background:var(--card);display:flex;justify-content:space-between;align-items:center}
+        .pages{flex:1;overflow-y:auto;padding:16px;padding-bottom:100px}
+        .pg{display:none}.pg.on{display:block}
+        .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .pcard{background:var(--card);border-radius:16px;padding:15px;display:flex;flex-direction:column;align-items:center;transition:all .2s;border:2px solid transparent}
+        .pcard:active{transform:scale(0.92);border-color:var(--accent);box-shadow:0 0 15px rgba(244,63,94,0.3)}
+        .emoji{font-size:2rem}
+        .name{font-size:0.8rem;color:var(--muted);margin-top:4px}
+        .price{font-weight:900;color:var(--accent);margin-top:2px}
+        .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;padding:10px;border-top:1px solid var(--border)}
+        .nav-btn{flex:1;text-align:center;font-size:0.7rem;color:var(--muted)}
+        .nav-btn.on{color:var(--accent)}
+        .btn{padding:12px;border-radius:12px;background:var(--accent);color:white;font-weight:700;width:100%;text-align:center}
+        .ipt{width:100%;padding:12px;border-radius:12px;background:var(--bg);color:white;border:1px solid var(--border);margin-bottom:10px}
+        .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:none;justify-content:center;align-items:center}
+        .modal{background:var(--card);padding:20px;border-radius:20px;width:90%;max-width:400px}
+        .toast{position:fixed;top:20px;left:5%;width:90%;background:var(--accent);color:white;padding:15px;border-radius:10px;display:none;text-align:center}
+    </style>
 </head>
 <body data-theme="dark">
-
-<div id="toast" class="toast"></div>
-
-<header class="hdr">
-<div class="hdr-left">
-<span id="hdrEmoji" style="font-size:1.5rem">🏖️</span>
-<div>
-<div class="hdr-title" id="hdrName">Chiringuito TPV</div>
-<div class="hdr-sub" id="lastSaved">Listo</div>
-</div>
-</div>
-<div class="hdr-right">
-<span class="hdr-badge" id="syncBadge">📡</span>
-</div>
-</header>
-
-<div class="pages" id="pages">
-
-<div class="pg on" id="pg-venta">
-<div class="search-wrap">
-<span class="search-icon">🔍</span>
-<input class="search-ipt" id="searchInput" placeholder="Buscar producto..." oninput="R.searchDebounce()">
-</div>
-<div class="tabs" id="catTabs"></div>
-<div class="pgrid" id="prodGrid"></div>
-<div id="cartArea"></div>
-</div>
-
-<div class="pg" id="pg-productos">
-<div class="pg-title">📦 Productos</div>
-<div class="row mb12 wrap" style="gap:8px">
-<button class="btn btn-outline btn-sm" onclick="DB.exportExcel()">📥 Excel</button>
-<button class="btn btn-outline btn-sm" onclick="DB.importExcel()">📂 Importar</button>
-<button class="btn btn-accent btn-sm" onclick="R.openProductModal()">➕ Añadir</button>
-</div>
-<div class="pg-subtitle">Categorías <button class="btn btn-accent btn-sm" onclick="R.openCategoryModal()" style="margin-left:auto">+ Nueva</button></div>
-<div id="catList"></div>
-<div class="pg-subtitle">Lista de productos</div>
-<div id="prodList"></div>
-</div>
-
-<div class="pg" id="pg-historial">
-<div class="pg-title">📊 Historial</div>
-<div class="row mb12" style="gap:8px">
-<input type="date" class="ipt flex1" id="histDate" onchange="R.renderHistorial()">
-<button class="btn btn-accent btn-sm" onclick="U.$('histDate').value=U.todayStr();R.renderHistorial()">Hoy</button>
-</div>
-<div id="statsArea"></div>
-<div class="pg-subtitle">🏆 Top productos</div>
-<div id="topArea" class="glass"></div>
-<div class="pg-subtitle">📜 Ventas</div>
-<div id="salesArea"></div>
-</div>
-
-<div class="pg" id="pg-caja">
-<div class="pg-title">💰 Caja</div>
-<div id="cashStatusBar"></div>
-<div class="row mb12" style="gap:8px">
-<button class="btn btn-green btn-sm flex1" id="btnOpenCash" onclick="R.openCashOpenModal()">🔓 Abrir Caja</button>
-<button class="btn btn-red btn-sm flex1" id="btnCloseCash" onclick="R.openCashCloseModal()">🔒 Cerrar Caja</button>
-</div>
-<div id="cashDetails"></div>
-</div>
-
-<div class="pg" id="pg-sync">
-<div class="pg-title">📡 Sincronizar</div>
-<div class="glass center mb12">
-<div style="font-size:2.5rem;margin-bottom:8px">🔄</div>
-<div class="bold">Conecta tu móvil con el de tu ayudante</div>
-</div>
-<div class="sync-card" onclick="SYNC.generateCode()">
-<div class="sync-icon">📤</div>
-<div class="sync-title">Enviar Datos</div>
-<div class="sync-desc">Genera código para el otro dispositivo</div>
-</div>
-<div class="sync-card" onclick="SYNC.receiveCode()">
-<div class="sync-icon">📥</div>
-<div class="sync-title">Recibir Datos</div>
-<div class="sync-desc">Pega el código recibido</div>
-</div>
-<div class="glass mt12">
-<div class="small muted" style="line-height:1.6">
-<b>Método recomendado:</b><br>
-1. En tu móvil → "Enviar Datos" → Copiar código<br>
-2. En el móvil de tu ayudante → "Recibir Datos" → Pegar código
-</div>
-</div>
-</div>
-
-<div class="pg" id="pg-config">
-<div class="pg-title">⚙️ Configuración</div>
-<div id="configArea"></div>
-</div>
-
-</div>
-
-<nav class="nav">
-<button class="nav-btn on" id="nav-venta" onclick="NAV.go('venta')"><span class="nav-icon">🛒</span>Venta</button>
-<button class="nav-btn" id="nav-productos" onclick="NAV.go('productos')"><span class="nav-icon">📦</span>Productos</button>
-<button class="nav-btn" id="nav-historial" onclick="NAV.go('historial')"><span class="nav-icon">📊</span>Historial</button>
-<button class="nav-btn" id="nav-caja" onclick="NAV.go('caja')"><span class="nav-icon">💰</span>Caja</button>
-<button class="nav-btn" id="nav-sync" onclick="NAV.go('sync')"><span class="nav-icon">🔄</span>Sincro</button>
-<button class="nav-btn" id="nav-config" onclick="NAV.go('config')"><span class="nav-icon">⚙️</span>Ajustes</button>
-</nav>
-
-<div class="overlay" id="overlay" onclick="if(event.target===this)R.closeModal()">
-<div class="modal" id="modalBox" onclick="event.stopImmediatePropagation()"></div>
-</div>
-
-<div class="overlay" id="ticketOverlay">
-<div class="modal" id="ticketBox"></div>
-</div>
-
-<script>
-// ==================== UTILIDADES ====================
-const U = {
-  $(id){return document.getElementById(id)},
-  todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`},
-  timeShort(){return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})},
-  money(v){const n=Number(v)||0;return n.toFixed(2).replace('.',',')+' €'},
-  round(n){return Math.round((Number(n)||0)*100)/100},
-  id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)},
-  esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]))},
-  vibrate(){navigator.vibrate?.(40)}
-};
-
-function toast(msg,type='ok'){
-  const t=U.$('toast');
-  t.textContent=msg;
-  t.className=`toast show ${type}`;
-  clearTimeout(t.timer);
-  t.timer=setTimeout(()=>t.classList.remove('show'),2200);
-}
-
-// ==================== BASE DE DATOS ====================
-const DB_KEY = 'chiringuito_tpv_v5';
-let DB = {
-  data: null,
-  load(){
-    try{
-      const saved = localStorage.getItem(DB_KEY);
-      this.data = saved ? JSON.parse(saved) : this.getDefaults();
-    }catch(e){
-      this.data = this.getDefaults();
-    }
-    this.applyTheme();
-    this.applyHeader();
-  },
-  getDefaults(){
-    return {
-      config: {businessName:"Chiringuito TPV",businessEmoji:"🏖️",currency:"€",theme:"dark",stockEnabled:false,accentColor:"#f43f5e",animations:true,deviceId:"dev_"+Math.random().toString(36).slice(2,10)},
-      categories: {c1:{id:"c1",name:"Bebidas",emoji:"🍺",order:1},c2:{id:"c2",name:"Cócteles",emoji:"🍹",order:2},c3:{id:"c3",name:"Tapas",emoji:"🍤",order:3},c4:{id:"c4",name:"Comida",emoji:"🍔",order:4},c5:{id:"c5",name:"Helados",emoji:"🍦",order:5},c6:{id:"c6",name:"Extras",emoji:"🧴",order:6}},
-      products: {
-        p1:{id:"p1",name:"Cerveza",price:2.5,cat:"c1",emoji:"🍺",stock:null},
-        p2:{id:"p2",name:"Tinto de Verano",price:3,cat:"c1",emoji:"🍷",stock:null},
-        p3:{id:"p3",name:"Agua",price:1.5,cat:"c1",emoji:"💧",stock:null},
-        p4:{id:"p4",name:"Refresco",price:2.2,cat:"c1",emoji:"🥤",stock:null},
-        p5:{id:"p5",name:"Mojito",price:6,cat:"c2",emoji:"🍹",stock:null},
-        p6:{id:"p6",name:"Gin Tonic",price:7,cat:"c2",emoji:"🍸",stock:null},
-        p7:{id:"p7",name:"Patatas Bravas",price:4.5,cat:"c3",emoji:"🍟",stock:null},
-        p8:{id:"p8",name:"Hamburguesa",price:7.5,cat:"c4",emoji:"🍔",stock:null},
-        p9:{id:"p9",name:"Helado",price:3,cat:"c5",emoji:"🍦",stock:null}
-      },
-      sales:{},
-      register:{isOpen:false,sessionId:null,initialCash:0,openedAt:null},
-      sessions:{},
-      syncLog:[]
-    };
-  },
-  save(){localStorage.setItem(DB_KEY,JSON.stringify(this.data));U.$('lastSaved').textContent='Guardado';},
-  applyTheme(){document.body.setAttribute('data-theme',this.data.config.theme||'dark')},
-  applyHeader(){
-    U.$('hdrName').textContent = this.data.config.businessName;
-    U.$('hdrEmoji').textContent = this.data.config.businessEmoji;
-    U.$('syncBadge').textContent = this.data.config.deviceId.slice(0,6);
-  }
-};
-
-// ==================== CARRITO ====================
-const CART = {
-  items:[],
-  method:'efectivo',
-  add(id){
-    const p=DB.data.products[id];if(!p)return;
-    const ex=this.items.find(i=>i.productId===id);
-    if(ex)ex.qty++;else this.items.push({productId:id,name:p.name,emoji:p.emoji,price:p.price,qty:1});
-    U.vibrate();
-    R.renderCart();
-  },
-  remove(id){
-    const i=this.items.findIndex(x=>x.productId===id);
-    if(i===-1)return;
-    if(this.items[i].qty>1)this.items[i].qty--;else this.items.splice(i,1);
-    R.renderCart();
-  },
-  clear(){this.items=[];R.renderCart()},
-  total(){return Math.round(this.items.reduce((s,i)=>s+i.price*i.qty,0)*100)/100},
-  count(){return this.items.reduce((s,i)=>s+i.qty,0)},
-  setMethod(m){this.method=m;document.querySelectorAll('.pay-btn').forEach(b=>b.classList.toggle('on',b.dataset.m===m))}
-};
-
-// ==================== RENDERIZADO ====================
-let selectedCategory = 'all';
-
-const R = {
-  renderAll(){this.renderVenta()},
-  renderVenta(){this.renderCatTabs();this.renderProducts();this.renderCart()},
-
-  renderCatTabs(){
-    const cats = Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));
-    let h = `<button class="tab ${selectedCategory==='all'?'on':''}" onclick="selectedCategory='all';R.renderVenta()">📋 Todo</button>`;
-    cats.forEach(c=>{h+=`<button class="tab ${selectedCategory===c.id?'on':''}" onclick="selectedCategory='${c.id}';R.renderVenta()">${U.esc(c.emoji)} ${U.esc(c.name)}</button>`});
-    U.$('catTabs').innerHTML = h;
-  },
-
-  renderProducts(){
-    const q = (U.$('searchInput').value||'').toLowerCase().trim();
-    const list = Object.values(DB.data.products).filter(p=>{
-      if(selectedCategory!=='all' && p.cat!==selectedCategory) return false;
-      if(q && !p.name.toLowerCase().includes(q)) return false;
-      return true;
-    }).sort((a,b)=>a.name.localeCompare(b.name));
-
-    let html = '';
-    list.forEach(p=>{
-      html += `<button class="pcard" onclick="CART.add('${p.id}')">
-        <span class="pcard-emoji">${U.esc(p.emoji||'📦')}</span>
-        <span class="pcard-name">${U.esc(p.name)}</span>
-        <span class="pcard-price">${U.money(p.price)}</span>
-      </button>`;
-    });
-    U.$('prodGrid').innerHTML = html || '<div class="empty"><div class="empty-icon">📦</div>No hay productos</div>';
-  },
-
-  renderCart(){
-    const area = U.$('cartArea');
-    if(!CART.items.length){
-      area.innerHTML = `<div class="empty"><div class="empty-icon">🛒</div>Toca un producto para añadirlo</div>`;
-      return;
-    }
-    let html = `<div class="cart"><div class="row-between mb8"><div class="bold">🧾 Ticket <span style="background:var(--accent);color:white;border-radius:999px;padding:2px 8px;font-size:0.75rem">${CART.count()}</span></div><button onclick="CART.clear()" style="color:#ef4444;font-weight:700">Vaciar</button></div>`;
-    CART.items.forEach(i=>{
-      html += `<div class="cart-item">
-        <div>${U.esc(i.emoji)} ${U.esc(i.name)}</div>
-        <div class="cart-qty">
-          <button class="qty-btn" onclick="CART.remove('${i.productId}')">−</button>
-          <strong>${i.qty}</strong>
-          <button class="qty-btn" onclick="CART.add('${i.productId}')">+</button>
-        </div>
-        <div class="cart-price">${U.money(i.price*i.qty)}</div>
-      </div>`;
-    });
-    html += `
-      <div class="cart-total">
-        <span class="bold">TOTAL</span>
-        <span class="cart-total-amount">${U.money(CART.total())}</span>
-      </div>
-      <div class="pay-row">
-        <button class="pay-btn ${CART.method==='efectivo'?'on':''}" data-m="efectivo" onclick="CART.setMethod('efectivo')">💵 Efectivo</button>
-        <button class="pay-btn ${CART.method==='tarjeta'?'on':''}" data-m="tarjeta" onclick="CART.setMethod('tarjeta')">💳 Tarjeta</button>
-        <button class="pay-btn ${CART.method==='bizum'?'on':''}" data-m="bizum" onclick="CART.setMethod('bizum')">📱 Bizum</button>
-      </div>
-      <button class="btn btn-green btn-block btn-lg mt12" onclick="R.cobrar()">✅ COBRAR ${U.money(CART.total())}</button>
-    </div>`;
-    area.innerHTML = html;
-  },
-
-  cobrar(){
-    if(!CART.items.length)return;
-    if(!DB.data.register.isOpen){toast('Abre la caja primero','err');NAV.go('caja');return}
-    if(CART.method==='efectivo')this.showCashModal();
-    else this.finalizarVenta(0,0);
-  },
-
-  showCashModal(){
-    const total = CART.total();
-    U.$('modalBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">💵 Pago en Efectivo</div><button class="modal-close" onclick="R.closeModal()">✕</button></div>
-      <div class="center mb12">Total: <strong style="color:var(--accent);font-size:1.5rem">${U.money(total)}</strong></div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        <button class="cash-qbtn" onclick="R.setCash(${total})">Exacto</button>
-        <button class="cash-qbtn" onclick="R.setCash(10)">10€</button>
-        <button class="cash-qbtn" onclick="R.setCash(20)">20€</button>
-        <button class="cash-qbtn" onclick="R.setCash(50)">50€</button>
-      </div>
-      <div class="field"><label class="label">Cantidad entregada</label><input class="ipt ipt-lg" id="cashInput" type="number" step="0.01" placeholder="0.00" oninput="R.calcChange()"></div>
-      <div id="changeBox" class="change-box" style="display:none"><div class="change-label">CAMBIO A DEVOLVER</div><div id="changeAmount" class="change-amount">0,00 €</div></div>
-      <button class="btn btn-green btn-block btn-lg mt12" id="confirmBtn" disabled onclick="R.confirmCash()">✅ Confirmar Pago</button>
-      <button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">Cancelar</button>
-    `;
-    U.$('overlay').classList.add('on');
-  },
-
-  setCash(v){U.$('cashInput').value=v;this.calcChange()},
-  calcChange(){
-    const total=CART.total();
-    const given=Number(U.$('cashInput').value)||0;
-    const change=U.round(given-total);
-    if(given>=total){
-      U.$('changeBox').style.display='block';
-      U.$('changeAmount').textContent=U.money(change);
-      U.$('confirmBtn').disabled=false;
-    }else{
-      U.$('changeBox').style.display='none';
-      U.$('confirmBtn').disabled=true;
-    }
-  },
-  confirmCash(){
-    const total=CART.total();
-    const given=Number(U.$('cashInput').value)||0;
-    if(given<total)return;
-    this.closeModal();
-    this.finalizarVenta(given,U.round(given-total));
-  },
-
-  finalizarVenta(given,change){
-    const total = CART.total();
-    const sale = {
-      items:CART.items.map(i=>({productId:i.productId,name:i.name,emoji:i.emoji,price:i.price,qty:i.qty,subtotal:U.round(i.price*i.qty)})),
-      total,method:CART.method,given,change,date:U.todayStr(),time:U.timeShort(),timestamp:Date.now(),sessionId:DB.data.register.sessionId||''
-    };
-    DB.addSale(sale);
-    this.showTicket(sale);
-    CART.clear();
-    toast(`Venta registrada: ${U.money(total)}`);
-  },
-
-  showTicket(sale){
-    const methodName = {efectivo:'💵 Efectivo',tarjeta:'💳 Tarjeta',bizum:'📱 Bizum'};
-    let items = sale.items.map(i=>`<div class="ticket-line"><span>${i.qty}× ${U.esc(i.name)}</span><span>${U.money(i.subtotal)}</span></div>`).join('');
-    let cash = sale.method==='efectivo' ? `<div class="ticket-line"><span>Entregado</span><span>${U.money(sale.given)}</span></div><div class="ticket-line"><span>Cambio</span><span style="color:#10b981">${U.money(sale.change)}</span></div>` : '';
-    U.$('ticketBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">✅ Venta Completada</div><button class="modal-close" onclick="R.closeTicket()">✕</button></div>
-      <div class="ticket">
-        <div class="ticket-center"><strong>${U.esc(DB.data.config.businessEmoji)} ${U.esc(DB.data.config.businessName)}</strong><br>${sale.date} - ${sale.time}</div>
-        ${items}
-        ${cash}
-        <div class="ticket-dash"></div>
-        <div class="ticket-line ticket-total"><span>TOTAL</span><span>${U.money(sale.total)}</span></div>
-        <div class="ticket-center" style="margin-top:12px;color:#555">Pago: ${methodName[sale.method]}<br>¡Gracias! 🌊</div>
-      </div>
-      <button class="btn btn-green btn-block btn-lg" onclick="R.closeTicket()">Nueva Venta</button>
-    `;
-    U.$('ticketOverlay').classList.add('on');
-  },
-  closeTicket(){U.$('ticketOverlay').classList.remove('on')},
-
-  renderProductsList(){
-    const prods = Object.values(DB.data.products).sort((a,b)=>a.name.localeCompare(b.name));
-    let html = '';
-    prods.forEach(p=>{
-      const cat = DB.data.categories[p.cat]?.name || 'Sin cat';
-      html += `<div class="list-item">
-        <span style="font-size:1.8rem">${U.esc(p.emoji||'📦')}</span>
-        <div style="flex:1"><div class="bold">${U.esc(p.name)}</div><div class="small muted">${cat} · ${U.money(p.price)}</div></div>
-        <button class="icon-btn" onclick="R.openProductModal('${p.id}')">✏️</button>
-        <button class="icon-btn" style="color:var(--red)" onclick="if(confirm('Eliminar ${U.esc(p.name)}?')){DB.deleteProduct('${p.id}');R.renderProductsList()}">🗑️</button>
-      </div>`;
-    });
-    U.$('prodList').innerHTML = html || '<div class="empty">No hay productos</div>';
-  },
-
-  renderCategoriesList(){
-    const cats = Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));
-    let html = '';
-    cats.forEach(c=>{
-      html += `<div class="list-item">
-        <span style="font-size:1.6rem">${U.esc(c.emoji)}</span>
-        <div style="flex:1"><div class="bold">${U.esc(c.name)}</div></div>
-        <button class="icon-btn" style="color:var(--red)" onclick="if(confirm('Eliminar categoría?')){DB.deleteCategory('${c.id}');R.renderCategoriesList()}">🗑️</button>
-      </div>`;
-    });
-    U.$('catList').innerHTML = html || '<div class="empty small">Sin categorías</div>';
-  },
-
-  openProductModal(editId=null){
-    const p = editId ? DB.data.products[editId] : {name:'',price:'',cat:'',emoji:'🍺'};
-    const cats = Object.values(DB.data.categories);
-    let opts = cats.map(c=>`<option value="${c.id}" ${p.cat===c.id?'selected':''}>${c.emoji} ${c.name}</option>`).join('');
-    U.$('modalBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">${editId?'Editar':'Nuevo'} Producto</div><button class="modal-close" onclick="R.closeModal()">✕</button></div>
-      <div class="field"><label class="label">Nombre</label><input class="ipt" id="pName" value="${U.esc(p.name)}"></div>
-      <div class="field"><label class="label">Precio (€)</label><input class="ipt" id="pPrice" type="number" step="0.1" value="${p.price}"></div>
-      <div class="field"><label class="label">Categoría</label><select class="ipt" id="pCat">${opts}</select></div>
-      <div class="field"><label class="label">Emoji</label><input class="ipt" id="pEmoji" value="${p.emoji}"></div>
-      <button class="btn btn-accent btn-block btn-lg" onclick="R.saveProduct('${editId||''}')">Guardar Producto</button>
-    `;
-    U.$('overlay').classList.add('on');
-  },
-
-  saveProduct(id){
-    const name = U.$('pName').value.trim();
-    const price = parseFloat(U.$('pPrice').value)||0;
-    const cat = U.$('pCat').value;
-    const emoji = U.$('pEmoji').value.trim()||'📦';
-    if(!name||!cat||price<=0){toast('Faltan datos','err');return}
-    if(id) DB.updateProduct(id,{name,price,cat,emoji});
-    else DB.addProduct({name,price,cat,emoji,stock:null});
-    this.closeModal();
-    this.renderProductsList();
-    this.renderVenta();
-    toast(id?'Actualizado':'Producto añadido');
-  },
-
-  openCategoryModal(){
-    U.$('modalBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">Nueva Categoría</div><button class="modal-close" onclick="R.closeModal()">✕</button></div>
-      <div class="field"><label class="label">Nombre</label><input class="ipt" id="catName" placeholder="Ej: Bebidas"></div>
-      <div class="field"><label class="label">Emoji</label><input class="ipt" id="catEmoji" value="🍹"></div>
-      <button class="btn btn-accent btn-block btn-lg" onclick="R.saveCategory()">Crear Categoría</button>
-    `;
-    U.$('overlay').classList.add('on');
-  },
-
-  saveCategory(){
-    const name = U.$('catName').value.trim();
-    const emoji = U.$('catEmoji').value||'📁';
-    if(!name){toast('Escribe un nombre','err');return}
-    DB.addCategory({name,emoji,order:Object.keys(DB.data.categories).length+1});
-    this.closeModal();
-    this.renderCategoriesList();
-    this.renderVenta();
-    toast('Categoría creada');
-  },
-
-  renderConfig(){
-    const c = DB.data.config;
-    const themes = [
-      {id:'dark',name:'🌙 Oscuro'},
-      {id:'light',name:'☀️ Claro'},
-      {id:'beach',name:'🏖️ Playa'},
-      {id:'sunset',name:'🌅 Atardecer'},
-      {id:'ocean',name:'🌊 Océano'},
-      {id:'neon',name:'🌈 Neón'}
-    ];
-    let themeHTML = themes.map(t=>`<button class="theme-card ${c.theme===t.id?'on':''}" onclick="R.setTheme('${t.id}')">${t.name}</button>`).join('');
-    U.$('configArea').innerHTML = `
-      <div class="glass">
-        <div class="setting-item"><div class="setting-icon">🏪</div><div class="setting-body"><div class="setting-title">Nombre del negocio</div><div class="setting-desc">${U.esc(c.businessName)}</div></div><button class="btn btn-outline btn-sm" onclick="R.editName()">Cambiar</button></div>
-        <div class="setting-item"><div class="setting-icon">${c.businessEmoji}</div><div class="setting-body"><div class="setting-title">Emoji</div></div><button class="btn btn-outline btn-sm" onclick="R.editEmoji()">Cambiar</button></div>
-        <div class="setting-item"><div class="setting-icon">📦</div><div class="setting-body"><div class="setting-title">Control de stock</div><div class="setting-desc">${c.stockEnabled?'Activado':'Desactivado'}</div></div><div class="toggle ${c.stockEnabled?'on':''}" onclick="R.toggleStock()"></div></div>
-        <div class="setting-item"><div class="setting-icon">✨</div><div class="setting-body"><div class="setting-title">Animaciones</div><div class="setting-desc">${c.animations?'Activadas':'Desactivadas'}</div></div><div class="toggle ${c.animations?'on':''}" onclick="R.toggleAnimations()"></div></div>
-      </div>
-      <div class="pg-subtitle mt16">🎨 Temas</div>
-      <div class="theme-grid">${themeHTML}</div>
-      <div class="glass mt12">
-        <button class="btn btn-red btn-block" onclick="R.resetApp()">🗑️ Reiniciar todos los datos</button>
-      </div>
-      <div class="center muted small mt16">Chiringuito TPV v4.1 • Datos guardados localmente</div>
-    `;
-  },
-
-  setTheme(t){DB.data.config.theme=t;DB.save();DB.applyTheme();this.renderConfig()},
-  toggleStock(){DB.data.config.stockEnabled=!DB.data.config.stockEnabled;DB.save();this.renderConfig();this.renderVenta();toast(DB.data.config.stockEnabled?'Stock activado':'Stock desactivado')},
-  toggleAnimations(){DB.data.config.animations=!DB.data.config.animations;DB.save();this.renderConfig();toast(DB.data.config.animations?'Animaciones activadas':'Animaciones desactivadas')},
-  editName(){const n=prompt('Nombre del negocio:',DB.data.config.businessName);if(n&&n.trim()){DB.data.config.businessName=n.trim();DB.save();DB.applyHeader();this.renderConfig()}},
-  editEmoji(){const emojis='🏖️🍹🌊☀️⛱️🍺🍔🏪🌴🥥🦀🌅';let html='';for(let e of emojis)html+=`<button class="emoji-opt" onclick="R.setBusinessEmoji('${e}')">${e}</button>`;U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">Elige emoji</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="emoji-grid">${html}</div>`;U.$('overlay').classList.add('on')},
-  setBusinessEmoji(e){DB.data.config.businessEmoji=e;DB.save();DB.applyHeader();this.closeModal();this.renderConfig()},
-  resetApp(){if(confirm('¿Borrar TODOS los datos?')&&confirm('¿Estás completamente seguro?')){localStorage.removeItem(DB_KEY);location.reload()}},
-
-  closeModal(){U.$('overlay').classList.remove('on')}
-};
-
-// ==================== SINCRONIZACIÓN ====================
-const SYNC = {
-  generateCode(){
-    const payload = {v:5,ts:Date.now(),cfg:DB.data.config,prod:DB.data.products,cat:DB.data.categories,sales:DB.data.sales,reg:DB.data.register};
-    const str = btoa(encodeURIComponent(JSON.stringify(payload)));
-    U.$('modalBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">📤 Enviar Datos</div><button class="modal-close" onclick="R.closeModal()">✕</button></div>
-      <div class="center mb12">Copia este código y pégalo en el otro dispositivo:</div>
-      <textarea id="syncCode" class="ipt" style="height:120px;font-size:0.75rem;word-break:break-all" readonly>${str}</textarea>
-      <button class="btn btn-accent btn-block btn-lg mt12" onclick="SYNC.copyCode()">📋 Copiar Código</button>
-      <button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">Cerrar</button>
-    `;
-    U.$('overlay').classList.add('on');
-  },
-  copyCode(){
-    const ta = U.$('syncCode');
-    ta.select();
-    document.execCommand('copy');
-    toast('✅ Código copiado al portapapeles');
-  },
-  receiveCode(){
-    U.$('modalBox').innerHTML = `
-      <div class="modal-head"><div class="modal-title">📥 Recibir Datos</div><button class="modal-close" onclick="R.closeModal()">✕</button></div>
-      <div class="center mb12">Pega aquí el código recibido:</div>
-      <textarea id="pasteCode" class="ipt" style="height:140px;font-size:0.75rem" placeholder="Pega el código aquí..."></textarea>
-      <button class="btn btn-green btn-block btn-lg mt12" onclick="SYNC.importCode()">✅ Importar Datos</button>
-      <button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">Cancelar</button>
-    `;
-    U.$('overlay').classList.add('on');
-  },
-  importCode(){
-    let code = U.$('pasteCode').value.trim();
-    if(!code){toast('Pega un código','err');return}
-    try{
-      const json = JSON.parse(decodeURIComponent(atob(code)));
-      if(json.v!==5)throw new Error('Versión incompatible');
-      const myId = DB.data.config.deviceId;
-      if(json.prod)DB.data.products=json.prod;
-      if(json.cat)DB.data.categories=json.cat;
-      if(json.sales)Object.assign(DB.data.sales,json.sales);
-      if(json.cfg){Object.assign(DB.data.config,json.cfg);DB.data.config.deviceId=myId}
-      if(json.reg)DB.data.register=json.reg;
-      DB.save();
-      DB.applyTheme();
-      DB.applyHeader();
-      R.renderAll();
-      R.closeModal();
-      toast('✅ Datos importados correctamente');
-    }catch(e){
-      toast('Código inválido','err');
-    }
-  }
-};
-
-// ==================== INICIALIZACIÓN ====================
-DB.load();
-R.renderAll();
-U.$('histDate').value = U.todayStr();
-toast('App cargada correctamente');
-</script>
+    <div id="toast" class="toast"></div>
+    <header class="hdr"><div class="hdr-title">🏖️ Chiringuito TPV</div><div id="syncBadge">📡</div></header>
+    <div class="pages">
+        <div id="pg-venta" class="pg on"><div class="pgrid" id="prodGrid"></div></div>
+        <div id="pg-sync" class="pg"><div class="glass"><button class="btn" onclick="SYNC.generate()">📤 Enviar Datos</button><button class="btn" style="margin-top:10px" onclick="SYNC.receive()">📥 Recibir Datos</button></div></div>
+        <!-- (Más páginas aquí...) -->
+    </div>
+    <nav class="nav">
+        <button class="nav-btn on" onclick="NAV.go('venta',this)">🛒 Venta</button>
+        <button class="nav-btn" onclick="NAV.go('sync',this)">📡 Sincro</button>
+    </nav>
+    <div class="overlay" id="ov"><div class="modal" id="mb"></div></div>
+    
+    <script>
+        // LÓGICA UNIFICADA
+        const DB = {
+            data: JSON.parse(localStorage.getItem('tpv_db')) || {products:{p1:{id:'p1',name:'Cerveza',price:2.5,emoji:'🍺'}},sales:{}},
+            save(){localStorage.setItem('tpv_db', JSON.stringify(this.data))}
+        };
+        const R = {
+            renderProducts(){
+                document.getElementById('prodGrid').innerHTML = Object.values(DB.data.products).map(p => `
+                    <button class="pcard" onclick="CART.add('${p.id}')">
+                        <span class="emoji">${p.emoji}</span>
+                        <span class="name">${p.name}</span>
+                        <span class="price">${p.price}€</span>
+                    </button>
+                `).join('');
+            }
+        };
+        const CART = {
+            items:[],
+            add(id){ 
+                this.items.push(DB.data.products[id]);
+                // Vibración táctil si existe
+                navigator.vibrate?.(30);
+                alert('Añadido: ' + DB.data.products[id].name);
+            }
+        };
+        const SYNC = {
+            generate(){
+                const data = btoa(JSON.stringify(DB.data));
+                document.getElementById('mb').innerHTML = `<h3>Código para compartir</h3><textarea style="width:100%;height:100px">${data}</textarea>`;
+                document.getElementById('ov').classList.add('on');
+            },
+            receive(){
+                const code = prompt("Pega el código:");
+                if(code){
+                    DB.data = JSON.parse(atob(code));
+                    DB.save();
+                    location.reload();
+                }
+            }
+        };
+        const NAV = {
+            go(p, btn){
+                document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
+                document.getElementById('pg-'+p).classList.add('on');
+                document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+                btn.classList.add('on');
+            }
+        };
+        R.renderProducts();
+    </script>
 </body>
 </html>
