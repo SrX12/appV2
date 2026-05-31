@@ -1,105 +1,3502 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Chiringuito TPV">
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" href="./icon.svg">
-    <link rel="apple-touch-icon" href="./icon.svg">
-    <title>Chiringuito TPV</title>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <style>
-        /* CSS INTEGRADO - Estilo fluido y moderno */
-        :root{--bg:#0f172a;--card:#1e293b;--accent:#f43f5e;--green:#10b981;--text:#f8fafc;--muted:#94a3b8;--border:rgba(148,163,184,.2);}
-        [data-theme="beach"]{--bg:#0a0e27;--card:#1e2540;--accent:#ff6b35;}
-        body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;height:100vh;display:flex;flex-direction:column}
-        .hdr{padding:16px;background:var(--card);display:flex;justify-content:space-between;align-items:center}
-        .pages{flex:1;overflow-y:auto;padding:16px;padding-bottom:100px}
-        .pg{display:none}.pg.on{display:block}
-        .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-        .pcard{background:var(--card);border-radius:16px;padding:15px;display:flex;flex-direction:column;align-items:center;transition:all .2s;border:2px solid transparent}
-        .pcard:active{transform:scale(0.92);border-color:var(--accent);box-shadow:0 0 15px rgba(244,63,94,0.3)}
-        .emoji{font-size:2rem}
-        .name{font-size:0.8rem;color:var(--muted);margin-top:4px}
-        .price{font-weight:900;color:var(--accent);margin-top:2px}
-        .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);display:flex;padding:10px;border-top:1px solid var(--border)}
-        .nav-btn{flex:1;text-align:center;font-size:0.7rem;color:var(--muted)}
-        .nav-btn.on{color:var(--accent)}
-        .btn{padding:12px;border-radius:12px;background:var(--accent);color:white;font-weight:700;width:100%;text-align:center}
-        .ipt{width:100%;padding:12px;border-radius:12px;background:var(--bg);color:white;border:1px solid var(--border);margin-bottom:10px}
-        .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;display:none;justify-content:center;align-items:center}
-        .modal{background:var(--card);padding:20px;border-radius:20px;width:90%;max-width:400px}
-        .toast{position:fixed;top:20px;left:5%;width:90%;background:var(--accent);color:white;padding:15px;border-radius:10px;display:none;text-align:center}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chiringuito TPV">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+
+<title>Chiringuito TPV</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+<style>
+:root{
+  --bg:#0f172a;
+  --bg2:#1e293b;
+  --card:#1e293b;
+  --card2:#334155;
+  --accent:#f43f5e;
+  --accent2:#fb7185;
+  --green:#10b981;
+  --yellow:#f59e0b;
+  --red:#ef4444;
+  --blue:#38bdf8;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --border:rgba(148,163,184,.25);
+  --input-bg:rgba(148,163,184,.08);
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --nav-bg:rgba(15,23,42,.97);
+  --radius:18px;
+  --radius-sm:12px;
+}
+
+[data-theme="light"]{
+  --bg:#f8fafc;
+  --bg2:#ffffff;
+  --card:#ffffff;
+  --card2:#f1f5f9;
+  --accent:#e11d48;
+  --accent2:#f43f5e;
+  --green:#059669;
+  --yellow:#d97706;
+  --red:#dc2626;
+  --blue:#0284c7;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:rgba(15,23,42,.13);
+  --input-bg:#f1f5f9;
+  --shadow:0 8px 26px rgba(15,23,42,.10);
+  --nav-bg:rgba(255,255,255,.97);
+}
+
+[data-theme="beach"]{
+  --bg:#0a0e27;
+  --bg2:#151f3f;
+  --card:#1e2a4f;
+  --card2:#2a3666;
+  --accent:#ff6b35;
+  --accent2:#ff8c61;
+  --green:#06d6a0;
+  --yellow:#ffd166;
+  --red:#ef476f;
+  --blue:#118ab2;
+  --text:#e8f1ff;
+  --muted:#8b9dc3;
+  --border:rgba(139,157,195,.25);
+  --input-bg:rgba(139,157,195,.10);
+  --shadow:0 8px 32px rgba(0,0,0,.42);
+  --nav-bg:rgba(10,14,39,.97);
+}
+
+[data-theme="sunset"]{
+  --bg:#1c1917;
+  --bg2:#292524;
+  --card:#292524;
+  --card2:#44403c;
+  --accent:#f97316;
+  --accent2:#fb923c;
+  --green:#84cc16;
+  --yellow:#fde047;
+  --red:#ef4444;
+  --blue:#06b6d4;
+  --text:#fafaf9;
+  --muted:#a8a29e;
+  --border:rgba(168,162,158,.25);
+  --input-bg:rgba(168,162,158,.10);
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --nav-bg:rgba(28,25,23,.97);
+}
+
+[data-theme="ocean"]{
+  --bg:#061826;
+  --bg2:#0b2a3f;
+  --card:#123c5a;
+  --card2:#1b5278;
+  --accent:#22d3ee;
+  --accent2:#67e8f9;
+  --green:#4ade80;
+  --yellow:#fde047;
+  --red:#fb7185;
+  --blue:#38bdf8;
+  --text:#e0f2fe;
+  --muted:#7dd3fc;
+  --border:rgba(125,211,252,.25);
+  --input-bg:rgba(125,211,252,.10);
+  --shadow:0 8px 32px rgba(0,0,0,.42);
+  --nav-bg:rgba(6,24,38,.97);
+}
+
+[data-theme="neon"]{
+  --bg:#050505;
+  --bg2:#111122;
+  --card:#181832;
+  --card2:#24244a;
+  --accent:#ff00ff;
+  --accent2:#00ffff;
+  --green:#00ff9f;
+  --yellow:#ffff00;
+  --red:#ff3864;
+  --blue:#00d4ff;
+  --text:#f8f8ff;
+  --muted:#a5a5ff;
+  --border:rgba(255,0,255,.28);
+  --input-bg:rgba(255,255,255,.08);
+  --shadow:0 0 28px rgba(255,0,255,.18);
+  --nav-bg:rgba(5,5,5,.97);
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  height:100%;
+  overflow:hidden;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  transition:background .25s,color .25s;
+}
+
+body.no-animations *,
+body.no-animations *::before,
+body.no-animations *::after{
+  transition:none!important;
+  animation:none!important;
+}
+
+button,input,select,textarea{
+  font:inherit;
+  color:inherit;
+}
+
+button{
+  cursor:pointer;
+  border:none;
+  background:none;
+}
+
+input,select,textarea{
+  outline:none;
+}
+
+::-webkit-scrollbar{
+  width:4px;
+  height:4px;
+}
+::-webkit-scrollbar-thumb{
+  background:var(--border);
+  border-radius:99px;
+}
+
+/* HEADER */
+.hdr{
+  position:sticky;
+  top:0;
+  z-index:80;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.hdr-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.hdr-emoji{
+  font-size:1.45rem;
+}
+
+.hdr-title{
+  font-weight:900;
+  font-size:1.12rem;
+  line-height:1.1;
+}
+
+.hdr-sub{
+  font-size:.68rem;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.hdr-badge{
+  font-size:.68rem;
+  background:var(--card2);
+  color:var(--muted);
+  padding:4px 9px;
+  border-radius:99px;
+}
+
+/* NAV */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:90;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+.nav-btn{
+  flex:1;
+  padding:8px 2px 7px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  color:var(--muted);
+  font-size:.61rem;
+  font-weight:700;
+  position:relative;
+  transition:color .2s;
+}
+
+.nav-btn.on{
+  color:var(--accent);
+}
+
+.nav-btn.on::after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:24%;
+  right:24%;
+  height:3px;
+  border-radius:0 0 4px 4px;
+  background:var(--accent);
+}
+
+.nav-icon{
+  font-size:1.27rem;
+  line-height:1;
+}
+
+/* LAYOUT */
+.pages{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:14px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 86px);
+}
+
+.pg{
+  display:none;
+}
+
+.pg.on{
+  display:block;
+  animation:fadeIn .22s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:.55;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.glass{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.row-between{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.wrap{
+  flex-wrap:wrap;
+}
+
+.flex1{
+  flex:1;
+}
+
+.center{
+  text-align:center;
+}
+
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}
+.mb12{margin-bottom:12px}
+
+.pg-title{
+  font-size:1.36rem;
+  font-weight:900;
+  margin-bottom:14px;
+}
+
+.pg-subtitle{
+  font-size:.96rem;
+  font-weight:800;
+  margin:16px 0 9px;
+}
+
+.muted{color:var(--muted)}
+.small{font-size:.78rem}
+.xsmall{font-size:.7rem}
+.bold{font-weight:900}
+.accent{color:var(--accent)}
+.green{color:var(--green)}
+.yellow{color:var(--yellow)}
+.red{color:var(--red)}
+.blue{color:var(--blue)}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border-radius:12px;
+  padding:11px 16px;
+  font-weight:800;
+  font-size:.86rem;
+  transition:transform .14s,opacity .14s,box-shadow .14s;
+  white-space:nowrap;
+}
+
+.btn:active{
+  transform:scale(.95);
+  opacity:.9;
+}
+
+.btn-accent{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 32%, transparent);
+}
+
+.btn-green{
+  background:var(--green);
+  color:white;
+}
+
+.btn-red{
+  background:var(--red);
+  color:white;
+}
+
+.btn-blue{
+  background:var(--blue);
+  color:white;
+}
+
+.btn-outline{
+  border:1.5px solid var(--border);
+  color:var(--text);
+  background:transparent;
+}
+
+.btn-ghost{
+  color:var(--muted);
+  background:transparent;
+}
+
+.btn-sm{
+  padding:8px 12px;
+  font-size:.76rem;
+}
+
+.btn-lg{
+  padding:14px 20px;
+  font-size:.96rem;
+}
+
+.btn-block{
+  width:100%;
+}
+
+.btn:disabled{
+  opacity:.4;
+  pointer-events:none;
+}
+
+/* INPUTS */
+.ipt{
+  width:100%;
+  padding:12px 14px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  background:var(--input-bg);
+  color:var(--text);
+  font-size:.9rem;
+  resize:vertical;
+}
+
+.ipt:focus{
+  border-color:var(--accent);
+}
+
+.ipt-lg{
+  padding:14px;
+  font-size:1.14rem;
+  font-weight:800;
+  text-align:center;
+}
+
+.label{
+  display:block;
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+
+.field{
+  margin-bottom:13px;
+}
+
+/* SEARCH */
+.search-wrap{
+  position:relative;
+  margin-bottom:12px;
+}
+
+.search-icon{
+  position:absolute;
+  left:13px;
+  top:50%;
+  transform:translateY(-50%);
+  opacity:.5;
+  font-size:.96rem;
+}
+
+.search-ipt{
+  width:100%;
+  padding:12px 14px 12px 40px;
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  background:var(--input-bg);
+  color:var(--text);
+}
+
+/* CATEGORIES */
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:3px 0 12px;
+  scrollbar-width:none;
+}
+
+.tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.tab{
+  white-space:nowrap;
+  padding:8px 16px;
+  border-radius:99px;
+  background:var(--card);
+  border:1.5px solid var(--border);
+  color:var(--muted);
+  font-size:.82rem;
+  font-weight:800;
+  transition:all .2s;
+}
+
+.tab.on{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+
+/* PRODUCTS */
+.pgrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+@media(min-width:520px){
+  .pgrid{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:780px){
+  .pgrid{grid-template-columns:repeat(5,1fr)}
+}
+
+.pcard{
+  position:relative;
+  background:linear-gradient(180deg,var(--card),color-mix(in srgb,var(--card) 85%, black));
+  border:1.5px solid transparent;
+  border-radius:16px;
+  padding:12px 8px;
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  overflow:hidden;
+  text-align:center;
+  user-select:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+  transition:transform .15s,border-color .15s,box-shadow .15s,filter .15s;
+}
+
+.pcard::before{
+  content:'';
+  position:absolute;
+  inset:auto;
+  width:0;
+  height:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.28);
+  opacity:0;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+.pcard.tap::before{
+  left:50%;
+  top:50%;
+  animation:ripple .45s ease-out;
+}
+
+@keyframes ripple{
+  0%{width:0;height:0;opacity:.5}
+  100%{width:220px;height:220px;opacity:0}
+}
+
+.pcard:active{
+  transform:scale(.92);
+  border-color:var(--accent);
+  box-shadow:0 0 0 8px color-mix(in srgb,var(--accent) 18%, transparent);
+  filter:brightness(1.12);
+}
+
+body.no-animations .pcard:active{
+  transform:none;
+  box-shadow:none;
+  filter:none;
+}
+
+.pcard-emoji{
+  font-size:2.1rem;
+  line-height:1;
+  transition:transform .18s;
+}
+
+.pcard:active .pcard-emoji{
+  transform:scale(1.25) rotate(-6deg);
+}
+
+.pcard-name{
+  color:var(--muted);
+  font-size:.74rem;
+  line-height:1.2;
+  max-height:2.4em;
+  overflow:hidden;
+}
+
+.pcard-price{
+  font-weight:900;
+  color:var(--accent);
+  font-size:.9rem;
+}
+
+.stock-badge{
+  position:absolute;
+  top:6px;
+  right:6px;
+  font-size:.62rem;
+  padding:2px 7px;
+  background:var(--bg);
+  color:var(--muted);
+  border-radius:99px;
+}
+
+.stock-badge.low{
+  color:var(--red);
+}
+
+/* CART */
+.cart{
+  background:var(--card);
+  border-top:3px solid var(--accent);
+  border-radius:22px 22px 0 0;
+  margin:16px -14px 0;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+
+.cart-item{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.cart-name{
+  font-size:.86rem;
+}
+
+.cart-qty{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.qty-btn{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  border:1.5px solid var(--border);
+  background:var(--card2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1rem;
+  font-weight:900;
+}
+
+.cart-price{
+  min-width:62px;
+  text-align:right;
+  font-weight:900;
+  color:var(--accent);
+}
+
+.cart-total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:2px solid var(--border);
+}
+
+.cart-total-amount{
+  font-size:1.52rem;
+  font-weight:1000;
+  color:var(--green);
+}
+
+.pay-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+
+.pay-btn{
+  padding:11px 6px;
+  border:2px solid var(--border);
+  border-radius:14px;
+  background:var(--card2);
+  text-align:center;
+  font-size:.78rem;
+  font-weight:800;
+  color:var(--muted);
+  transition:all .2s;
+}
+
+.pay-btn span{
+  display:block;
+  font-size:1.2rem;
+  margin-bottom:2px;
+}
+
+.pay-btn.on{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 12%, transparent);
+}
+
+/* MODALS */
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.overlay.on{
+  display:flex;
+}
+
+.modal{
+  width:100%;
+  max-width:520px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:var(--bg2);
+  border-radius:24px 24px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border);
+  box-shadow:var(--shadow);
+  animation:modalUp .22s ease;
+}
+
+@keyframes modalUp{
+  from{transform:translateY(40px);opacity:.6}
+  to{transform:translateY(0);opacity:1}
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.modal-title{
+  font-size:1.18rem;
+  font-weight:900;
+}
+
+.modal-close{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:var(--card2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.05rem;
+}
+
+/* CASH */
+.cash-quick{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:12px 0;
+}
+
+.cash-qbtn{
+  padding:12px 6px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  background:var(--card2);
+  font-weight:900;
+  text-align:center;
+}
+
+.change-box{
+  text-align:center;
+  background:var(--bg);
+  border:2px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  margin:12px 0;
+}
+
+.change-label{
+  font-size:.76rem;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.change-amount{
+  font-size:2.1rem;
+  font-weight:1000;
+  color:var(--green);
+}
+
+/* TICKET */
+.ticket{
+  background:white;
+  color:#111;
+  border-radius:14px;
+  padding:16px;
+  font-family:"Courier New",monospace;
+  font-size:.82rem;
+  line-height:1.45;
+  margin:12px 0;
+}
+
+.ticket-center{
+  text-align:center;
+}
+
+.ticket-line{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:3px 0;
+}
+
+.ticket-dash{
+  border-top:1px dashed #aaa;
+  margin:7px 0;
+}
+
+.ticket-total{
+  font-size:1.05rem;
+  font-weight:1000;
+}
+
+/* LIST */
+.list-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.list-body{
+  flex:1;
+  min-width:0;
+}
+
+.list-title{
+  font-weight:900;
+  font-size:.9rem;
+}
+
+.list-sub{
+  font-size:.76rem;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.icon-btn{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:var(--card2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* HISTORY */
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-bottom:12px;
+}
+
+.stat{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:13px 10px;
+  text-align:center;
+}
+
+.stat-val{
+  font-size:1.25rem;
+  font-weight:1000;
+}
+
+.stat-lbl{
+  color:var(--muted);
+  font-size:.72rem;
+  margin-top:3px;
+}
+
+.sale-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-bottom:8px;
+}
+
+.sale-head{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:5px;
+}
+
+.pill{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:99px;
+  font-size:.7rem;
+  font-weight:900;
+  margin-top:5px;
+}
+
+.pill-cash{background:rgba(16,185,129,.16);color:var(--green)}
+.pill-card{background:rgba(56,189,248,.16);color:var(--blue)}
+.pill-bizum{background:rgba(245,158,11,.16);color:var(--yellow)}
+
+/* CAJA */
+.cash-status{
+  text-align:center;
+  border-radius:14px;
+  padding:12px;
+  font-weight:1000;
+  margin-bottom:13px;
+  border:1.5px solid;
+}
+
+.cash-status.open{
+  color:var(--green);
+  border-color:var(--green);
+  background:rgba(16,185,129,.11);
+}
+
+.cash-status.closed{
+  color:var(--red);
+  border-color:var(--red);
+  background:rgba(239,68,68,.11);
+}
+
+.cash-row{
+  display:flex;
+  justify-content:space-between;
+  padding:9px 0;
+  border-bottom:1px solid var(--border);
+  font-size:.9rem;
+}
+
+/* CONFIG */
+.setting-item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:13px 15px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.setting-icon{
+  font-size:1.35rem;
+  flex-shrink:0;
+}
+
+.setting-body{
+  flex:1;
+  min-width:0;
+}
+
+.setting-title{
+  font-weight:900;
+  font-size:.9rem;
+}
+
+.setting-desc{
+  color:var(--muted);
+  font-size:.73rem;
+  margin-top:2px;
+}
+
+.toggle{
+  position:relative;
+  width:46px;
+  height:26px;
+  border-radius:99px;
+  background:var(--card2);
+  border:2px solid var(--border);
+  flex-shrink:0;
+}
+
+.toggle::after{
+  content:'';
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:var(--muted);
+  transition:left .2s,background .2s;
+}
+
+.toggle.on{
+  background:var(--accent);
+  border-color:var(--accent);
+}
+
+.toggle.on::after{
+  left:20px;
+  background:white;
+}
+
+.theme-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.theme-card{
+  padding:13px;
+  border:2px solid var(--border);
+  border-radius:14px;
+  background:var(--card);
+  font-weight:900;
+}
+
+.theme-card.on{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+
+.color-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+}
+
+.color-dot{
+  height:38px;
+  border-radius:12px;
+  border:2px solid var(--border);
+}
+
+/* SYNC */
+.sync-card{
+  background:var(--card);
+  border:1.5px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  text-align:center;
+  margin-bottom:10px;
+  box-shadow:var(--shadow);
+}
+
+.sync-card:active{
+  transform:scale(.98);
+}
+
+.sync-icon{
+  font-size:2.4rem;
+  margin-bottom:7px;
+}
+
+.sync-title{
+  font-weight:1000;
+  margin-bottom:4px;
+}
+
+.sync-desc{
+  color:var(--muted);
+  font-size:.76rem;
+}
+
+.qr-box{
+  background:white;
+  display:inline-block;
+  border-radius:16px;
+  padding:14px;
+  margin:10px auto;
+}
+
+/* EMOJIS */
+.emoji-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.emoji-opt{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:var(--card2);
+  border:2px solid var(--border);
+  font-size:1.25rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* EMPTY */
+.empty{
+  text-align:center;
+  padding:36px 16px;
+  color:var(--muted);
+}
+
+.empty-icon{
+  font-size:2.4rem;
+  margin-bottom:8px;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  top:calc(env(safe-area-inset-top) + 66px);
+  left:50%;
+  transform:translateX(-50%) translateY(-90px);
+  z-index:300;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  padding:11px 18px;
+  border-radius:99px;
+  font-size:.86rem;
+  font-weight:800;
+  box-shadow:var(--shadow);
+  opacity:0;
+  max-width:92%;
+  text-align:center;
+  transition:transform .25s,opacity .25s;
+}
+
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
+
+.toast.ok{border-color:var(--green)}
+.toast.err{border-color:var(--red)}
+
+@media(max-width:350px){
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+  .nav-btn{font-size:.55rem}
+}
+</style>
 </head>
+
 <body data-theme="dark">
-    <div id="toast" class="toast"></div>
-    <header class="hdr"><div class="hdr-title">🏖️ Chiringuito TPV</div><div id="syncBadge">📡</div></header>
-    <div class="pages">
-        <div id="pg-venta" class="pg on"><div class="pgrid" id="prodGrid"></div></div>
-        <div id="pg-sync" class="pg"><div class="glass"><button class="btn" onclick="SYNC.generate()">📤 Enviar Datos</button><button class="btn" style="margin-top:10px" onclick="SYNC.receive()">📥 Recibir Datos</button></div></div>
-        <!-- (Más páginas aquí...) -->
+
+<div id="toast" class="toast"></div>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <span id="hdrEmoji" class="hdr-emoji">🏖️</span>
+    <div>
+      <div id="hdrName" class="hdr-title">Chiringuito TPV</div>
+      <div id="lastSaved" class="hdr-sub">Listo</div>
     </div>
-    <nav class="nav">
-        <button class="nav-btn on" onclick="NAV.go('venta',this)">🛒 Venta</button>
-        <button class="nav-btn" onclick="NAV.go('sync',this)">📡 Sincro</button>
-    </nav>
-    <div class="overlay" id="ov"><div class="modal" id="mb"></div></div>
-    
-    <script>
-        // LÓGICA UNIFICADA
-        const DB = {
-            data: JSON.parse(localStorage.getItem('tpv_db')) || {products:{p1:{id:'p1',name:'Cerveza',price:2.5,emoji:'🍺'}},sales:{}},
-            save(){localStorage.setItem('tpv_db', JSON.stringify(this.data))}
-        };
-        const R = {
-            renderProducts(){
-                document.getElementById('prodGrid').innerHTML = Object.values(DB.data.products).map(p => `
-                    <button class="pcard" onclick="CART.add('${p.id}')">
-                        <span class="emoji">${p.emoji}</span>
-                        <span class="name">${p.name}</span>
-                        <span class="price">${p.price}€</span>
-                    </button>
-                `).join('');
+  </div>
+  <span id="syncBadge" class="hdr-badge">📡</span>
+</header>
+
+<div id="pages" class="pages">
+
+  <!-- VENTA -->
+  <div id="pg-venta" class="pg on">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" class="search-ipt" placeholder="Buscar producto..." oninput="R.searchDebounce()">
+    </div>
+    <div id="catTabs" class="tabs"></div>
+    <div id="prodGrid" class="pgrid"></div>
+    <div id="cartArea"></div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div id="pg-productos" class="pg">
+    <div class="pg-title">📦 Productos</div>
+
+    <div class="row wrap mb12">
+      <button class="btn btn-outline btn-sm" onclick="DB.exportExcel()">📥 Excel</button>
+      <button class="btn btn-outline btn-sm" onclick="DB.importExcel()">📂 Importar</button>
+      <button class="btn btn-accent btn-sm" onclick="R.openProductModal()">➕ Añadir</button>
+    </div>
+
+    <div class="row-between">
+      <div class="pg-subtitle" style="margin:0">📁 Categorías</div>
+      <button class="btn btn-accent btn-sm" onclick="R.openCategoryModal()">➕ Nueva</button>
+    </div>
+    <div id="catList" class="mt12"></div>
+
+    <div class="pg-subtitle">📋 Lista de productos</div>
+    <div id="prodList"></div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="pg-historial" class="pg">
+    <div class="pg-title">📊 Historial</div>
+
+    <div class="row mb12">
+      <input id="histDate" class="ipt flex1" type="date" onchange="R.renderHistorial()">
+      <button class="btn btn-accent btn-sm" onclick="U.$('histDate').value=U.todayStr();R.renderHistorial()">Hoy</button>
+    </div>
+
+    <div id="statsArea"></div>
+
+    <div class="pg-subtitle">🏆 Top productos</div>
+    <div id="topArea" class="glass"></div>
+
+    <div class="pg-subtitle">📜 Ventas</div>
+    <div id="salesArea"></div>
+  </div>
+
+  <!-- CAJA -->
+  <div id="pg-caja" class="pg">
+    <div class="pg-title">💰 Caja</div>
+
+    <div id="cashStatusBar"></div>
+
+    <div class="row mb12">
+      <button id="btnOpenCash" class="btn btn-green btn-sm flex1" onclick="R.openCashOpenModal()">🔓 Abrir</button>
+      <button id="btnCloseCash" class="btn btn-red btn-sm flex1" onclick="R.openCashCloseModal()">🔒 Cerrar</button>
+    </div>
+
+    <div id="cashDetails"></div>
+  </div>
+
+  <!-- SYNC -->
+  <div id="pg-sync" class="pg">
+    <div class="pg-title">📡 Sincronizar</div>
+
+    <div class="glass center">
+      <div style="font-size:2.5rem;margin-bottom:8px">🔄</div>
+      <div class="bold">Conecta tu móvil con el de tu ayudante</div>
+      <div class="small muted mt8">QR, foto o código de texto</div>
+    </div>
+
+    <div class="sync-card" onclick="SYNC.generateCode()">
+      <div class="sync-icon">📤</div>
+      <div class="sync-title">Enviar Datos</div>
+      <div class="sync-desc">Genera QR y código de texto</div>
+    </div>
+
+    <div class="sync-card" onclick="SYNC.receiveCode()">
+      <div class="sync-icon">📥</div>
+      <div class="sync-title">Recibir Datos</div>
+      <div class="sync-desc">Escanea QR o pega código</div>
+    </div>
+
+    <div class="sync-card" onclick="DB.exportExcel()">
+      <div class="sync-icon">📂</div>
+      <div class="sync-title">Exportar Excel</div>
+      <div class="sync-desc">Copia de seguridad completa</div>
+    </div>
+
+    <div class="sync-card" onclick="DB.importExcel()">
+      <div class="sync-icon">📥</div>
+      <div class="sync-title">Importar Excel</div>
+      <div class="sync-desc">Restaurar datos desde archivo</div>
+    </div>
+
+    <div class="glass small muted" style="line-height:1.6">
+      <b>Recomendado:</b><br>
+      1. En tu móvil pulsa <b>Enviar Datos</b>.<br>
+      2. El ayudante pulsa <b>Recibir Datos</b>.<br>
+      3. Escanea el QR o pega el código.
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="pg-config" class="pg">
+    <div class="pg-title">⚙️ Configuración</div>
+    <div id="configArea"></div>
+  </div>
+
+</div>
+
+<nav class="nav">
+  <button id="nav-venta" class="nav-btn on" onclick="NAV.go('venta')"><span class="nav-icon">🛒</span>Venta</button>
+  <button id="nav-productos" class="nav-btn" onclick="NAV.go('productos')"><span class="nav-icon">📦</span>Productos</button>
+  <button id="nav-historial" class="nav-btn" onclick="NAV.go('historial')"><span class="nav-icon">📊</span>Historial</button>
+  <button id="nav-caja" class="nav-btn" onclick="NAV.go('caja')"><span class="nav-icon">💰</span>Caja</button>
+  <button id="nav-sync" class="nav-btn" onclick="NAV.go('sync')"><span class="nav-icon">🔄</span>Sincro</button>
+  <button id="nav-config" class="nav-btn" onclick="NAV.go('config')"><span class="nav-icon">⚙️</span>Ajustes</button>
+</nav>
+
+<div id="overlay" class="overlay" onclick="if(event.target===this){SYNC.stop();R.closeModal()}">
+  <div id="modalBox" class="modal" onclick="event.stopPropagation()"></div>
+</div>
+
+<div id="ticketOverlay" class="overlay">
+  <div id="ticketBox" class="modal"></div>
+</div>
+
+<script>
+/* =========================
+   UTILIDADES
+========================= */
+const U = {
+  $(id){ return document.getElementById(id); },
+
+  todayStr(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  },
+
+  timeShort(){
+    return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  },
+
+  money(v){
+    const n = Number(v) || 0;
+    const cur = DB.data?.config?.currency || '€';
+    return n.toFixed(2).replace('.',',') + ' ' + cur;
+  },
+
+  round(n){
+    return Math.round((Number(n)||0)*100)/100;
+  },
+
+  id(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  },
+
+  esc(s){
+    return String(s ?? '').replace(/[<>&"']/g,c=>({
+      '<':'&lt;',
+      '>':'&gt;',
+      '&':'&amp;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[c]));
+  },
+
+  vibrate(ms=35){
+    try{ navigator.vibrate?.(ms); }catch(e){}
+  }
+};
+
+function toast(msg,type='ok'){
+  const t = U.$('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* =========================
+   NAVEGACIÓN
+========================= */
+const PAGES = ['venta','productos','historial','caja','sync','config'];
+
+const NAV = {
+  go(page){
+    PAGES.forEach(p=>{
+      U.$('pg-'+p)?.classList.remove('on');
+      U.$('nav-'+p)?.classList.remove('on');
+    });
+
+    U.$('pg-'+page)?.classList.add('on');
+    U.$('nav-'+page)?.classList.add('on');
+    U.$('pages').scrollTop = 0;
+
+    if(page === 'venta') R.renderVenta();
+    if(page === 'productos'){ R.renderProductsList(); R.renderCategoriesList(); }
+    if(page === 'historial'){
+      if(!U.$('histDate').value) U.$('histDate').value = U.todayStr();
+      R.renderHistorial();
+    }
+    if(page === 'caja') R.renderCaja();
+    if(page === 'config') R.renderConfig();
+  }
+};
+
+/* =========================
+   BASE DE DATOS LOCAL
+========================= */
+const DB_KEY = 'chiringuito_tpv_v7';
+
+const DB = {
+  data:null,
+
+  defaults(){
+    return {
+      config:{
+        businessName:'Chiringuito TPV',
+        businessEmoji:'🏖️',
+        currency:'€',
+        theme:'dark',
+        accentColor:'',
+        stockEnabled:false,
+        animations:true,
+        deviceId:'dev_'+U.id()
+      },
+
+      categories:{
+        c1:{id:'c1',name:'Bebidas',emoji:'🍺',order:1},
+        c2:{id:'c2',name:'Cócteles',emoji:'🍹',order:2},
+        c3:{id:'c3',name:'Tapas',emoji:'🍤',order:3},
+        c4:{id:'c4',name:'Comida',emoji:'🍔',order:4},
+        c5:{id:'c5',name:'Helados',emoji:'🍦',order:5},
+        c6:{id:'c6',name:'Extras',emoji:'🧴',order:6}
+      },
+
+      products:{
+        p1:{id:'p1',name:'Cerveza',price:2.50,cat:'c1',emoji:'🍺',stock:null},
+        p2:{id:'p2',name:'Tinto verano',price:3.00,cat:'c1',emoji:'🍷',stock:null},
+        p3:{id:'p3',name:'Agua',price:1.50,cat:'c1',emoji:'💧',stock:null},
+        p4:{id:'p4',name:'Refresco',price:2.20,cat:'c1',emoji:'🥤',stock:null},
+        p5:{id:'p5',name:'Café',price:1.50,cat:'c1',emoji:'☕',stock:null},
+        p6:{id:'p6',name:'Mojito',price:6.00,cat:'c2',emoji:'🍹',stock:null},
+        p7:{id:'p7',name:'Gin Tonic',price:7.00,cat:'c2',emoji:'🍸',stock:null},
+        p8:{id:'p8',name:'Sangría',price:3.50,cat:'c2',emoji:'🍷',stock:null},
+        p9:{id:'p9',name:'Patatas bravas',price:4.50,cat:'c3',emoji:'🍟',stock:null},
+        p10:{id:'p10',name:'Gambas',price:8.00,cat:'c3',emoji:'🍤',stock:null},
+        p11:{id:'p11',name:'Calamares',price:6.50,cat:'c3',emoji:'🦑',stock:null},
+        p12:{id:'p12',name:'Hamburguesa',price:7.50,cat:'c4',emoji:'🍔',stock:null},
+        p13:{id:'p13',name:'Ensalada',price:5.50,cat:'c4',emoji:'🥗',stock:null},
+        p14:{id:'p14',name:'Helado',price:3.00,cat:'c5',emoji:'🍦',stock:null},
+        p15:{id:'p15',name:'Polo',price:2.00,cat:'c5',emoji:'🧊',stock:null},
+        p16:{id:'p16',name:'Crema solar',price:5.00,cat:'c6',emoji:'🧴',stock:null}
+      },
+
+      sales:{},
+      register:{isOpen:false,sessionId:null,initialCash:0,openedAt:null},
+      sessions:{},
+      syncLog:[]
+    };
+  },
+
+  load(){
+    try{
+      const saved = localStorage.getItem(DB_KEY);
+      this.data = saved ? JSON.parse(saved) : this.defaults();
+    }catch(e){
+      this.data = this.defaults();
+    }
+
+    this.migrate();
+    this.applyTheme();
+    this.applyHeader();
+    this.save();
+  },
+
+  migrate(){
+    const d = this.defaults();
+
+    if(!this.data.config) this.data.config = d.config;
+    if(!this.data.categories) this.data.categories = d.categories;
+    if(!this.data.products) this.data.products = d.products;
+    if(!this.data.sales) this.data.sales = {};
+    if(!this.data.register) this.data.register = d.register;
+    if(!this.data.sessions) this.data.sessions = {};
+    if(!this.data.syncLog) this.data.syncLog = [];
+
+    if(!this.data.config.deviceId) this.data.config.deviceId = 'dev_'+U.id();
+    if(this.data.config.stockEnabled === undefined) this.data.config.stockEnabled = false;
+    if(this.data.config.animations === undefined) this.data.config.animations = true;
+    if(this.data.config.accentColor === undefined) this.data.config.accentColor = '';
+    if(!this.data.config.currency) this.data.config.currency = '€';
+  },
+
+  save(){
+    try{
+      this.data.lastSaved = Date.now();
+      localStorage.setItem(DB_KEY,JSON.stringify(this.data));
+      U.$('lastSaved').textContent = 'Guardado ' + U.timeShort();
+    }catch(e){
+      toast('Error al guardar datos','err');
+    }
+  },
+
+  applyTheme(){
+    document.body.setAttribute('data-theme',this.data.config.theme || 'dark');
+
+    if(this.data.config.accentColor){
+      document.documentElement.style.setProperty('--accent',this.data.config.accentColor);
+    }else{
+      document.documentElement.style.removeProperty('--accent');
+    }
+
+    document.body.classList.toggle('no-animations',!this.data.config.animations);
+  },
+
+  applyHeader(){
+    U.$('hdrName').textContent = this.data.config.businessName;
+    U.$('hdrEmoji').textContent = this.data.config.businessEmoji;
+    U.$('syncBadge').textContent = this.data.config.deviceId.slice(0,8);
+  },
+
+  addProduct(p){
+    const id = 'p_'+U.id();
+    p.id = id;
+    this.data.products[id] = p;
+    this.save();
+    return id;
+  },
+
+  updateProduct(id,u){
+    if(this.data.products[id]){
+      Object.assign(this.data.products[id],u);
+      this.save();
+    }
+  },
+
+  deleteProduct(id){
+    delete this.data.products[id];
+    this.save();
+  },
+
+  addCategory(c){
+    const id = 'c_'+U.id();
+    c.id = id;
+    this.data.categories[id] = c;
+    this.save();
+    return id;
+  },
+
+  deleteCategory(id){
+    delete this.data.categories[id];
+    this.save();
+  },
+
+  addSale(sale){
+    const id = 'v_'+U.id();
+    sale.id = id;
+    this.data.sales[id] = sale;
+
+    if(this.data.config.stockEnabled){
+      sale.items.forEach(i=>{
+        const p = this.data.products[i.productId];
+        if(p && p.stock !== null && p.stock !== undefined){
+          p.stock = Math.max(0,p.stock - i.qty);
+        }
+      });
+    }
+
+    this.save();
+    return id;
+  },
+
+  openRegister(initialCash){
+    const sid = 'ses_'+U.id();
+
+    this.data.register = {
+      isOpen:true,
+      sessionId:sid,
+      initialCash:Number(initialCash)||0,
+      openedAt:Date.now()
+    };
+
+    this.data.sessions[sid] = {
+      id:sid,
+      status:'open',
+      initialCash:Number(initialCash)||0,
+      openedAt:Date.now(),
+      openedDate:U.todayStr(),
+      openedTime:U.timeShort()
+    };
+
+    this.save();
+  },
+
+  closeRegister(actualCash){
+    const sid = this.data.register.sessionId;
+    if(!sid) return null;
+
+    const sales = Object.values(this.data.sales).filter(s=>s.sessionId===sid);
+
+    let cash = 0;
+    let card = 0;
+    let bizum = 0;
+    let total = 0;
+
+    sales.forEach(s=>{
+      total += s.total;
+      if(s.method === 'efectivo') cash += s.total;
+      if(s.method === 'tarjeta') card += s.total;
+      if(s.method === 'bizum') bizum += s.total;
+    });
+
+    const expected = U.round(this.data.register.initialCash + cash);
+    const difference = U.round(Number(actualCash) - expected);
+
+    const closed = {
+      ...this.data.sessions[sid],
+      status:'closed',
+      closedAt:Date.now(),
+      closedDate:U.todayStr(),
+      closedTime:U.timeShort(),
+      tickets:sales.length,
+      totalSales:U.round(total),
+      cashSales:U.round(cash),
+      cardSales:U.round(card),
+      bizumSales:U.round(bizum),
+      expectedCash:expected,
+      actualCash:Number(actualCash),
+      difference
+    };
+
+    this.data.sessions[sid] = closed;
+
+    this.data.register = {
+      isOpen:false,
+      sessionId:null,
+      initialCash:0,
+      openedAt:null
+    };
+
+    this.save();
+    return closed;
+  },
+
+  exportExcel(){
+    if(typeof XLSX === 'undefined'){
+      toast('Librería Excel no disponible','err');
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    const prodRows = Object.values(this.data.products).map(p=>({
+      ID:p.id,
+      Nombre:p.name,
+      Precio:p.price,
+      Categoria:this.data.categories[p.cat]?.name || p.cat,
+      CategoriaID:p.cat,
+      Icono:p.emoji,
+      Stock:p.stock !== null && p.stock !== undefined ? p.stock : ''
+    }));
+
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(prodRows),'Productos');
+
+    const catRows = Object.values(this.data.categories).map(c=>({
+      ID:c.id,
+      Nombre:c.name,
+      Icono:c.emoji,
+      Orden:c.order || 0
+    }));
+
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(catRows),'Categorias');
+
+    const salesRows = Object.values(this.data.sales).map(s=>({
+      ID:s.id,
+      Fecha:s.date,
+      Hora:s.time,
+      Total:s.total,
+      Metodo:s.method,
+      Entregado:s.given || '',
+      Cambio:s.change || '',
+      Productos:(s.items||[]).map(i=>`${i.qty}x ${i.name}`).join(', '),
+      ItemsJSON:JSON.stringify(s.items || []),
+      Sesion:s.sessionId || ''
+    }));
+
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(salesRows),'Ventas');
+
+    const sessionRows = Object.values(this.data.sessions).map(s=>({
+      ID:s.id,
+      Estado:s.status,
+      FechaApertura:s.openedDate,
+      HoraApertura:s.openedTime,
+      FechaCierre:s.closedDate || '',
+      HoraCierre:s.closedTime || '',
+      EfectivoInicial:s.initialCash,
+      Tickets:s.tickets || 0,
+      TotalVentas:s.totalSales || 0,
+      Efectivo:s.cashSales || 0,
+      Tarjeta:s.cardSales || 0,
+      Bizum:s.bizumSales || 0,
+      EsperadoCaja:s.expectedCash || '',
+      RealCaja:s.actualCash || '',
+      Diferencia:s.difference || ''
+    }));
+
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sessionRows),'Caja');
+
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([this.data.config]),'Config');
+
+    const name = this.data.config.businessName.replace(/\s+/g,'_');
+    XLSX.writeFile(wb,`${name}_${U.todayStr()}.xlsx`);
+
+    toast('Excel exportado');
+  },
+
+  importExcel(){
+    if(typeof XLSX === 'undefined'){
+      toast('Librería Excel no disponible','err');
+      return;
+    }
+
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.xlsx,.xls';
+
+    inp.onchange = async e=>{
+      const file = e.target.files[0];
+      if(!file) return;
+
+      try{
+        toast('Importando Excel...');
+
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf);
+        const myDeviceId = this.data.config.deviceId;
+
+        if(wb.Sheets['Categorias']){
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Categorias']);
+          this.data.categories = {};
+          rows.forEach(r=>{
+            this.data.categories[r.ID] = {
+              id:r.ID,
+              name:r.Nombre,
+              emoji:r.Icono || '📁',
+              order:Number(r.Orden)||0
+            };
+          });
+        }
+
+        if(wb.Sheets['Productos']){
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Productos']);
+          this.data.products = {};
+          rows.forEach(r=>{
+            this.data.products[r.ID] = {
+              id:r.ID,
+              name:r.Nombre,
+              price:Number(r.Precio),
+              cat:r.CategoriaID || r.Categoria,
+              emoji:r.Icono || '📦',
+              stock:r.Stock !== '' && r.Stock !== undefined ? Number(r.Stock) : null
+            };
+          });
+        }
+
+        if(wb.Sheets['Ventas']){
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Ventas']);
+          rows.forEach(r=>{
+            if(!this.data.sales[r.ID]){
+              let items = [];
+              try{
+                items = r.ItemsJSON ? JSON.parse(r.ItemsJSON) : [];
+              }catch(_){}
+
+              this.data.sales[r.ID] = {
+                id:r.ID,
+                date:r.Fecha,
+                time:r.Hora,
+                total:Number(r.Total),
+                method:r.Metodo,
+                given:Number(r.Entregado)||0,
+                change:Number(r.Cambio)||0,
+                items,
+                sessionId:r.Sesion || ''
+              };
             }
-        };
-        const CART = {
-            items:[],
-            add(id){ 
-                this.items.push(DB.data.products[id]);
-                // Vibración táctil si existe
-                navigator.vibrate?.(30);
-                alert('Añadido: ' + DB.data.products[id].name);
+          });
+        }
+
+        if(wb.Sheets['Config']){
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Config']);
+          if(rows[0]){
+            Object.assign(this.data.config,rows[0]);
+            this.data.config.deviceId = myDeviceId;
+          }
+        }
+
+        this.migrate();
+        this.save();
+        this.applyTheme();
+        this.applyHeader();
+        R.renderAll();
+
+        toast('Excel importado');
+
+      }catch(err){
+        console.error(err);
+        toast('Error al importar Excel','err');
+      }
+    };
+
+    inp.click();
+  }
+};
+
+/* =========================
+   CARRITO
+========================= */
+const CART = {
+  items:[],
+  method:'efectivo',
+
+  add(productId){
+    const p = DB.data.products[productId];
+    if(!p) return;
+
+    if(DB.data.config.stockEnabled && p.stock !== null && p.stock !== undefined && p.stock <= 0){
+      toast('Producto agotado','err');
+      return;
+    }
+
+    const existing = this.items.find(i=>i.productId===productId);
+
+    if(existing){
+      if(DB.data.config.stockEnabled && p.stock !== null && p.stock !== undefined && existing.qty >= p.stock){
+        toast('Stock insuficiente','err');
+        return;
+      }
+      existing.qty++;
+    }else{
+      this.items.push({
+        productId,
+        name:p.name,
+        emoji:p.emoji,
+        price:p.price,
+        qty:1
+      });
+    }
+
+    U.vibrate();
+    R.tapProduct(productId);
+    R.renderCart();
+  },
+
+  remove(productId){
+    const i = this.items.findIndex(x=>x.productId===productId);
+    if(i === -1) return;
+
+    if(this.items[i].qty > 1){
+      this.items[i].qty--;
+    }else{
+      this.items.splice(i,1);
+    }
+
+    R.renderCart();
+  },
+
+  clear(){
+    this.items = [];
+    R.renderCart();
+  },
+
+  total(){
+    return U.round(this.items.reduce((s,i)=>s+i.price*i.qty,0));
+  },
+
+  count(){
+    return this.items.reduce((s,i)=>s+i.qty,0);
+  },
+
+  setMethod(method){
+    this.method = method;
+    document.querySelectorAll('.pay-btn').forEach(b=>{
+      b.classList.toggle('on',b.dataset.method===method);
+    });
+  }
+};
+
+/* =========================
+   RENDERIZADO
+========================= */
+let selectedCategory = 'all';
+let searchTimer = null;
+
+const R = {
+  renderAll(){
+    this.renderVenta();
+
+    if(U.$('pg-productos').classList.contains('on')){
+      this.renderProductsList();
+      this.renderCategoriesList();
+    }
+
+    if(U.$('pg-historial').classList.contains('on')){
+      this.renderHistorial();
+    }
+
+    if(U.$('pg-caja').classList.contains('on')){
+      this.renderCaja();
+    }
+
+    if(U.$('pg-config').classList.contains('on')){
+      this.renderConfig();
+    }
+  },
+
+  searchDebounce(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(()=>this.renderProducts(),150);
+  },
+
+  renderVenta(){
+    this.renderCategories();
+    this.renderProducts();
+    this.renderCart();
+  },
+
+  renderCategories(){
+    const cats = Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));
+
+    let html = `
+      <button class="tab ${selectedCategory==='all'?'on':''}" onclick="selectedCategory='all';R.renderVenta()">
+        📋 Todo
+      </button>
+    `;
+
+    cats.forEach(c=>{
+      html += `
+        <button class="tab ${selectedCategory===c.id?'on':''}" onclick="selectedCategory='${c.id}';R.renderVenta()">
+          ${U.esc(c.emoji)} ${U.esc(c.name)}
+        </button>
+      `;
+    });
+
+    U.$('catTabs').innerHTML = html;
+  },
+
+  renderProducts(){
+    const q = (U.$('searchInput')?.value || '').toLowerCase().trim();
+    const stockOn = DB.data.config.stockEnabled;
+
+    const products = Object.values(DB.data.products)
+      .filter(p=>{
+        if(selectedCategory !== 'all' && p.cat !== selectedCategory) return false;
+        if(q && !p.name.toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a,b)=>a.name.localeCompare(b.name,'es'));
+
+    if(!products.length){
+      U.$('prodGrid').innerHTML = `
+        <div class="empty" style="grid-column:1/-1">
+          <div class="empty-icon">📦</div>
+          No hay productos
+        </div>
+      `;
+      return;
+    }
+
+    U.$('prodGrid').innerHTML = products.map(p=>{
+      const hasStock = stockOn && p.stock !== null && p.stock !== undefined;
+      const out = hasStock && p.stock <= 0;
+      const low = hasStock && p.stock > 0 && p.stock <= 5;
+
+      return `
+        <button id="prod-${p.id}" class="pcard ${out?'out':''}" onclick="CART.add('${p.id}')">
+          ${hasStock ? `<span class="stock-badge ${low?'low':''}">${out?'✕':p.stock}</span>` : ''}
+          <span class="pcard-emoji">${U.esc(p.emoji || '📦')}</span>
+          <span class="pcard-name">${U.esc(p.name)}</span>
+          <span class="pcard-price">${U.money(p.price)}</span>
+        </button>
+      `;
+    }).join('');
+  },
+
+  tapProduct(productId){
+    if(!DB.data.config.animations) return;
+
+    const el = U.$('prod-'+productId);
+    if(!el) return;
+
+    el.classList.remove('tap');
+    void el.offsetWidth;
+    el.classList.add('tap');
+
+    setTimeout(()=>el.classList.remove('tap'),450);
+  },
+
+  renderCart(){
+    const area = U.$('cartArea');
+
+    if(!CART.items.length){
+      area.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🛒</div>
+          Toca un producto para empezar
+        </div>
+      `;
+      return;
+    }
+
+    const items = CART.items.map(i=>`
+      <div class="cart-item">
+        <div class="cart-name">${U.esc(i.emoji)} ${U.esc(i.name)}</div>
+
+        <div class="cart-qty">
+          <button class="qty-btn" onclick="CART.remove('${i.productId}')" style="color:var(--red)">−</button>
+          <strong>${i.qty}</strong>
+          <button class="qty-btn" onclick="CART.add('${i.productId}')" style="color:var(--green)">+</button>
+        </div>
+
+        <div class="cart-price">${U.money(i.price*i.qty)}</div>
+      </div>
+    `).join('');
+
+    const m = CART.method;
+
+    area.innerHTML = `
+      <div class="cart">
+        <div class="row-between mb8">
+          <div class="bold">
+            🧾 Ticket
+            <span style="background:var(--accent);color:white;border-radius:99px;padding:2px 8px;font-size:.72rem">
+              ${CART.count()}
+            </span>
+          </div>
+          <button onclick="CART.clear()" style="color:var(--red);font-weight:900">Vaciar</button>
+        </div>
+
+        ${items}
+
+        <div class="cart-total">
+          <span class="bold">TOTAL</span>
+          <span class="cart-total-amount">${U.money(CART.total())}</span>
+        </div>
+
+        <div class="pay-row">
+          <button class="pay-btn ${m==='efectivo'?'on':''}" data-method="efectivo" onclick="CART.setMethod('efectivo')">
+            <span>💵</span>Efectivo
+          </button>
+          <button class="pay-btn ${m==='tarjeta'?'on':''}" data-method="tarjeta" onclick="CART.setMethod('tarjeta')">
+            <span>💳</span>Tarjeta
+          </button>
+          <button class="pay-btn ${m==='bizum'?'on':''}" data-method="bizum" onclick="CART.setMethod('bizum')">
+            <span>📱</span>Bizum
+          </button>
+        </div>
+
+        <button class="btn btn-green btn-block btn-lg mt12" onclick="R.cobrar()">
+          ✅ COBRAR ${U.money(CART.total())}
+        </button>
+      </div>
+    `;
+  },
+
+  cobrar(){
+    if(!CART.items.length) return;
+
+    if(!DB.data.register.isOpen){
+      toast('Primero abre la caja','err');
+      NAV.go('caja');
+      return;
+    }
+
+    if(CART.method === 'efectivo'){
+      this.showCashModal();
+    }else{
+      this.finalizarVenta(0,0);
+    }
+  },
+
+  showCashModal(){
+    const total = CART.total();
+
+    const quick = [total,5,10,20,50,100,200];
+
+    const buttons = quick.map(v=>`
+      <button class="cash-qbtn" onclick="R.setCash(${v})">
+        ${v===total?'Exacto':U.money(v)}
+      </button>
+    `).join('');
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">💵 Pago en efectivo</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="center mb12">
+        Total:
+        <strong style="font-size:1.55rem;color:var(--accent)">
+          ${U.money(total)}
+        </strong>
+      </div>
+
+      <div class="cash-quick">${buttons}</div>
+
+      <div class="field">
+        <label class="label">Cantidad entregada</label>
+        <input id="cashInput" class="ipt ipt-lg" type="number" step="0.01" placeholder="0.00" oninput="R.calcChange()">
+      </div>
+
+      <div id="changeBox" class="change-box" style="display:none">
+        <div class="change-label">CAMBIO A DEVOLVER</div>
+        <div id="changeAmount" class="change-amount">0,00 €</div>
+        <div id="changeBreakdown" class="small muted mt8"></div>
+      </div>
+
+      <button id="confirmCashBtn" class="btn btn-green btn-block btn-lg" disabled onclick="R.confirmCash()">
+        ✅ Confirmar pago
+      </button>
+
+      <button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">
+        Cancelar
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  setCash(value){
+    U.$('cashInput').value = value;
+    this.calcChange();
+  },
+
+  calcChange(){
+    const total = CART.total();
+    const given = Number(U.$('cashInput').value)||0;
+    const change = U.round(given - total);
+
+    if(given >= total){
+      U.$('changeBox').style.display = 'block';
+      U.$('changeAmount').textContent = U.money(change);
+      U.$('confirmCashBtn').disabled = false;
+      U.$('changeBreakdown').textContent = change > 0 ? this.breakdown(change) : '';
+    }else{
+      U.$('changeBox').style.display = 'none';
+      U.$('confirmCashBtn').disabled = true;
+    }
+  },
+
+  breakdown(value){
+    const coins = [50,20,10,5,2,1,0.5,0.2,0.1];
+    let rest = U.round(value);
+    const out = [];
+
+    coins.forEach(c=>{
+      const n = Math.floor(rest / c);
+      if(n > 0){
+        out.push(`${n}×${c}€`);
+        rest = U.round(rest - n*c);
+      }
+    });
+
+    return out.length ? 'Desglose: ' + out.join(' + ') : '';
+  },
+
+  confirmCash(){
+    const total = CART.total();
+    const given = Number(U.$('cashInput').value)||0;
+
+    if(given < total){
+      toast('Importe insuficiente','err');
+      return;
+    }
+
+    this.closeModal();
+    this.finalizarVenta(given,U.round(given-total));
+  },
+
+  finalizarVenta(given,change){
+    const total = CART.total();
+
+    const sale = {
+      items:CART.items.map(i=>({
+        productId:i.productId,
+        name:i.name,
+        emoji:i.emoji,
+        price:i.price,
+        qty:i.qty,
+        subtotal:U.round(i.price*i.qty)
+      })),
+      total,
+      method:CART.method,
+      given:U.round(given),
+      change:U.round(change),
+      date:U.todayStr(),
+      time:U.timeShort(),
+      timestamp:Date.now(),
+      sessionId:DB.data.register.sessionId || '',
+      deviceId:DB.data.config.deviceId
+    };
+
+    DB.addSale(sale);
+    this.showTicket(sale);
+    CART.clear();
+    U.vibrate(80);
+    toast('Venta registrada: '+U.money(total));
+  },
+
+  showTicket(sale){
+    const methodName = {
+      efectivo:'💵 Efectivo',
+      tarjeta:'💳 Tarjeta',
+      bizum:'📱 Bizum'
+    };
+
+    const items = sale.items.map(i=>`
+      <div class="ticket-line">
+        <span>${i.qty}× ${U.esc(i.name)}</span>
+        <span>${U.money(i.subtotal)}</span>
+      </div>
+    `).join('');
+
+    const cash = sale.method==='efectivo' ? `
+      <div class="ticket-dash"></div>
+      <div class="ticket-line">
+        <span>Entregado</span>
+        <span>${U.money(sale.given)}</span>
+      </div>
+      <div class="ticket-line">
+        <span>Cambio</span>
+        <span style="color:#16a34a;font-weight:900">${U.money(sale.change)}</span>
+      </div>
+    ` : '';
+
+    U.$('ticketBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">✅ Venta completada</div>
+        <button class="modal-close" onclick="R.closeTicket()">✕</button>
+      </div>
+
+      <div class="ticket">
+        <div class="ticket-center">
+          <strong style="font-size:1rem">
+            ${U.esc(DB.data.config.businessEmoji)}
+            ${U.esc(DB.data.config.businessName)}
+          </strong>
+          <br>
+          <span style="color:#666">${sale.date} · ${sale.time}</span>
+        </div>
+
+        <div class="ticket-dash"></div>
+        ${items}
+        ${cash}
+        <div class="ticket-dash"></div>
+
+        <div class="ticket-line ticket-total">
+          <span>TOTAL</span>
+          <span>${U.money(sale.total)}</span>
+        </div>
+
+        <div class="ticket-dash"></div>
+
+        <div class="ticket-center" style="color:#666">
+          Pago: ${methodName[sale.method] || sale.method}<br>
+          ¡Gracias por su visita! 🌊
+        </div>
+      </div>
+
+      <button class="btn btn-green btn-block btn-lg" onclick="R.closeTicket()">
+        Nueva venta
+      </button>
+    `;
+
+    U.$('ticketOverlay').classList.add('on');
+  },
+
+  closeTicket(){
+    U.$('ticketOverlay').classList.remove('on');
+  },
+
+  /* PRODUCTOS */
+  renderProductsList(){
+    const products = Object.values(DB.data.products).sort((a,b)=>a.name.localeCompare(b.name,'es'));
+
+    if(!products.length){
+      U.$('prodList').innerHTML = '<div class="empty">No hay productos</div>';
+      return;
+    }
+
+    U.$('prodList').innerHTML = products.map(p=>{
+      const cat = DB.data.categories[p.cat]?.name || 'Sin categoría';
+      const stock = DB.data.config.stockEnabled && p.stock !== null && p.stock !== undefined ? ` · Stock: ${p.stock}` : '';
+
+      return `
+        <div class="list-item">
+          <div style="font-size:1.6rem">${U.esc(p.emoji || '📦')}</div>
+          <div class="list-body">
+            <div class="list-title">${U.esc(p.name)}</div>
+            <div class="list-sub">${U.esc(cat)}${stock} · ${U.money(p.price)}</div>
+          </div>
+          <button class="icon-btn" onclick="R.openProductModal('${p.id}')">✏️</button>
+          <button class="icon-btn" style="color:var(--red)" onclick="R.deleteProduct('${p.id}')">🗑️</button>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderCategoriesList(){
+    const cats = Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));
+
+    if(!cats.length){
+      U.$('catList').innerHTML = '<div class="empty small">Sin categorías</div>';
+      return;
+    }
+
+    U.$('catList').innerHTML = cats.map(c=>`
+      <div class="list-item">
+        <div style="font-size:1.6rem">${U.esc(c.emoji)}</div>
+        <div class="list-body">
+          <div class="list-title">${U.esc(c.name)}</div>
+        </div>
+        <button class="icon-btn" style="color:var(--red)" onclick="R.deleteCategory('${c.id}')">🗑️</button>
+      </div>
+    `).join('');
+  },
+
+  openProductModal(id=null){
+    const p = id ? DB.data.products[id] : {
+      name:'',
+      price:'',
+      cat:'',
+      emoji:'🍺',
+      stock:null
+    };
+
+    const cats = Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));
+
+    const opts = cats.map(c=>`
+      <option value="${c.id}" ${p.cat===c.id?'selected':''}>
+        ${c.emoji} ${c.name}
+      </option>
+    `).join('');
+
+    const stockField = DB.data.config.stockEnabled ? `
+      <div class="field">
+        <label class="label">Stock (vacío = ilimitado)</label>
+        <input id="prodStock" class="ipt" type="number" min="0" value="${p.stock!==null && p.stock!==undefined ? p.stock : ''}">
+      </div>
+    ` : '';
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">${id?'Editar':'Nuevo'} producto</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="field">
+        <label class="label">Nombre</label>
+        <input id="prodName" class="ipt" value="${U.esc(p.name)}" placeholder="Ej: Cerveza">
+      </div>
+
+      <div class="field">
+        <label class="label">Precio</label>
+        <input id="prodPrice" class="ipt" type="number" step="0.01" min="0" value="${p.price}" placeholder="0.00">
+      </div>
+
+      <div class="field">
+        <label class="label">Categoría</label>
+        <select id="prodCat" class="ipt">${opts}</select>
+      </div>
+
+      ${stockField}
+
+      <div class="field">
+        <label class="label">Emoji</label>
+        <input id="prodEmoji" class="ipt" value="${p.emoji || '📦'}">
+      </div>
+
+      <button class="btn btn-accent btn-block btn-lg" onclick="R.saveProduct('${id||''}')">
+        Guardar producto
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  saveProduct(id){
+    const name = U.$('prodName').value.trim();
+    const price = Number(U.$('prodPrice').value)||0;
+    const cat = U.$('prodCat').value;
+    const emoji = U.$('prodEmoji').value.trim() || '📦';
+
+    let stock = null;
+    const stockInput = U.$('prodStock');
+
+    if(stockInput){
+      stock = stockInput.value.trim()==='' ? null : Math.max(0,parseInt(stockInput.value)||0);
+    }
+
+    if(!name || !cat || price <= 0){
+      toast('Faltan datos','err');
+      return;
+    }
+
+    const data = {name,price,cat,emoji,stock};
+
+    if(id){
+      DB.updateProduct(id,data);
+    }else{
+      DB.addProduct(data);
+    }
+
+    this.closeModal();
+    this.renderProductsList();
+    this.renderVenta();
+
+    toast(id?'Producto actualizado':'Producto añadido');
+  },
+
+  deleteProduct(id){
+    const p = DB.data.products[id];
+    if(!p) return;
+
+    if(confirm('¿Eliminar "'+p.name+'"?')){
+      DB.deleteProduct(id);
+      this.renderProductsList();
+      this.renderVenta();
+      toast('Producto eliminado');
+    }
+  },
+
+  openCategoryModal(){
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">Nueva categoría</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="field">
+        <label class="label">Nombre</label>
+        <input id="catName" class="ipt" placeholder="Ej: Bebidas">
+      </div>
+
+      <div class="field">
+        <label class="label">Emoji</label>
+        <input id="catEmoji" class="ipt" value="🍹">
+      </div>
+
+      <button class="btn btn-accent btn-block btn-lg" onclick="R.saveCategory()">
+        Crear categoría
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  saveCategory(){
+    const name = U.$('catName').value.trim();
+    const emoji = U.$('catEmoji').value.trim() || '📁';
+
+    if(!name){
+      toast('Escribe un nombre','err');
+      return;
+    }
+
+    DB.addCategory({
+      name,
+      emoji,
+      order:Object.keys(DB.data.categories).length+1
+    });
+
+    this.closeModal();
+    this.renderCategoriesList();
+    this.renderVenta();
+
+    toast('Categoría creada');
+  },
+
+  deleteCategory(id){
+    if(confirm('¿Eliminar categoría?')){
+      DB.deleteCategory(id);
+      this.renderCategoriesList();
+      this.renderVenta();
+      toast('Categoría eliminada');
+    }
+  },
+
+  /* HISTORIAL */
+  renderHistorial(){
+    const date = U.$('histDate').value || U.todayStr();
+
+    const sales = Object.values(DB.data.sales)
+      .filter(s=>s.date===date)
+      .sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+
+    let total = 0;
+    let cash = 0;
+    let card = 0;
+    let bizum = 0;
+    const productMap = {};
+
+    sales.forEach(s=>{
+      total += s.total;
+      if(s.method==='efectivo') cash += s.total;
+      if(s.method==='tarjeta') card += s.total;
+      if(s.method==='bizum') bizum += s.total;
+
+      (s.items||[]).forEach(i=>{
+        if(!productMap[i.name]){
+          productMap[i.name] = {
+            qty:0,
+            total:0,
+            emoji:i.emoji || '📦'
+          };
+        }
+
+        productMap[i.name].qty += i.qty;
+        productMap[i.name].total += i.subtotal || (i.price*i.qty);
+      });
+    });
+
+    const avg = sales.length ? total/sales.length : 0;
+
+    U.$('statsArea').innerHTML = `
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-val green">${U.money(total)}</div>
+          <div class="stat-lbl">Ingresos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val accent">${sales.length}</div>
+          <div class="stat-lbl">Tickets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val yellow">${U.money(avg)}</div>
+          <div class="stat-lbl">Ticket medio</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val blue">${U.money(cash)}</div>
+          <div class="stat-lbl">Efectivo</div>
+        </div>
+      </div>
+    `;
+
+    const top = Object.entries(productMap)
+      .sort((a,b)=>b[1].qty-a[1].qty)
+      .slice(0,5);
+
+    U.$('topArea').innerHTML = top.length ? top.map(([name,d])=>`
+      <div class="row-between" style="padding:7px 0;border-bottom:1px solid var(--border)">
+        <span>${d.emoji} ${U.esc(name)}</span>
+        <strong class="small muted">${d.qty} uds · ${U.money(d.total)}</strong>
+      </div>
+    `).join('') : '<div class="center muted small">Sin datos</div>';
+
+    if(!sales.length){
+      U.$('salesArea').innerHTML = '<div class="empty small">No hay ventas este día</div>';
+      return;
+    }
+
+    const pillClass = {
+      efectivo:'pill-cash',
+      tarjeta:'pill-card',
+      bizum:'pill-bizum'
+    };
+
+    const pillLabel = {
+      efectivo:'💵 Efectivo',
+      tarjeta:'💳 Tarjeta',
+      bizum:'📱 Bizum'
+    };
+
+    U.$('salesArea').innerHTML = sales.map(s=>{
+      const items = (s.items||[]).map(i=>`${i.qty}× ${i.name}`).join(', ');
+
+      const cashInfo = s.method==='efectivo' ? `
+        <div class="small muted mt8">
+          Entregado: ${U.money(s.given)} · Cambio: ${U.money(s.change)}
+        </div>
+      ` : '';
+
+      return `
+        <div class="sale-card">
+          <div class="sale-head">
+            <span class="small muted">🕐 ${s.time}</span>
+            <strong class="green">${U.money(s.total)}</strong>
+          </div>
+          <div class="small muted">${U.esc(items)}</div>
+          <span class="pill ${pillClass[s.method]||''}">
+            ${pillLabel[s.method]||s.method}
+          </span>
+          ${cashInfo}
+        </div>
+      `;
+    }).join('');
+  },
+
+  /* CAJA */
+  renderCaja(){
+    const reg = DB.data.register;
+
+    U.$('cashStatusBar').innerHTML = `
+      <div class="cash-status ${reg.isOpen?'open':'closed'}">
+        ${reg.isOpen?'🟢 CAJA ABIERTA':'🔒 CAJA CERRADA'}
+      </div>
+    `;
+
+    U.$('btnOpenCash').disabled = reg.isOpen;
+    U.$('btnCloseCash').disabled = !reg.isOpen;
+
+    let html = '';
+
+    if(reg.isOpen && reg.sessionId){
+      const sales = Object.values(DB.data.sales).filter(s=>s.sessionId===reg.sessionId);
+
+      let total = 0;
+      let cash = 0;
+      let card = 0;
+      let bizum = 0;
+
+      sales.forEach(s=>{
+        total += s.total;
+        if(s.method==='efectivo') cash += s.total;
+        if(s.method==='tarjeta') card += s.total;
+        if(s.method==='bizum') bizum += s.total;
+      });
+
+      const expected = U.round(reg.initialCash + cash);
+
+      html += `
+        <div class="glass">
+          <div class="bold mb8">📊 Sesión actual</div>
+
+          <div class="cash-row">
+            <span class="muted">Efectivo inicial</span>
+            <strong>${U.money(reg.initialCash)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Tickets</span>
+            <strong>${sales.length}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Total ventas</span>
+            <strong class="green">${U.money(total)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">💵 Efectivo</span>
+            <strong>${U.money(cash)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">💳 Tarjeta</span>
+            <strong>${U.money(card)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">📱 Bizum</span>
+            <strong>${U.money(bizum)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">💰 Esperado en caja</span>
+            <strong class="yellow">${U.money(expected)}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    const closed = Object.values(DB.data.sessions)
+      .filter(s=>s.status==='closed')
+      .sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));
+
+    if(closed.length){
+      const c = closed[0];
+      const diffClass = c.difference<0 ? 'red' : c.difference>0 ? 'green' : 'yellow';
+
+      html += `
+        <div class="glass">
+          <div class="bold mb8">📋 Último cierre</div>
+
+          <div class="cash-row">
+            <span class="muted">Fecha</span>
+            <strong>${c.closedDate} ${c.closedTime}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Ventas</span>
+            <strong>${U.money(c.totalSales)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Esperado</span>
+            <strong>${U.money(c.expectedCash)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Real</span>
+            <strong>${U.money(c.actualCash)}</strong>
+          </div>
+
+          <div class="cash-row">
+            <span class="muted">Diferencia</span>
+            <strong class="${diffClass}">${U.money(c.difference)}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    U.$('cashDetails').innerHTML = html || '<div class="empty small">Abre la caja para empezar</div>';
+  },
+
+  openCashOpenModal(){
+    if(DB.data.register.isOpen){
+      toast('La caja ya está abierta','err');
+      return;
+    }
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">🔓 Abrir caja</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="field">
+        <label class="label">Efectivo inicial</label>
+        <input id="initialCash" class="ipt ipt-lg" type="number" step="0.01" min="0" placeholder="Ej: 100">
+      </div>
+
+      <button class="btn btn-green btn-block btn-lg" onclick="R.confirmOpenCash()">
+        Abrir caja
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  confirmOpenCash(){
+    const value = Number(U.$('initialCash').value)||0;
+    DB.openRegister(value);
+    this.closeModal();
+    this.renderCaja();
+    toast('Caja abierta con '+U.money(value));
+  },
+
+  openCashCloseModal(){
+    if(!DB.data.register.isOpen){
+      toast('La caja ya está cerrada','err');
+      return;
+    }
+
+    const sid = DB.data.register.sessionId;
+    const sales = Object.values(DB.data.sales).filter(s=>s.sessionId===sid);
+
+    let cash = 0;
+
+    sales.forEach(s=>{
+      if(s.method==='efectivo') cash += s.total;
+    });
+
+    const expected = U.round(DB.data.register.initialCash + cash);
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">🔒 Cerrar caja</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="glass">
+        <div class="cash-row">
+          <span class="muted">Efectivo inicial</span>
+          <strong>${U.money(DB.data.register.initialCash)}</strong>
+        </div>
+
+        <div class="cash-row">
+          <span class="muted">Ventas efectivo</span>
+          <strong>${U.money(cash)}</strong>
+        </div>
+
+        <div class="cash-row">
+          <span class="muted">Esperado</span>
+          <strong class="yellow">${U.money(expected)}</strong>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Efectivo real contado</label>
+        <input id="actualCash" class="ipt ipt-lg" type="number" step="0.01" min="0" oninput="R.calcCloseDiff(${expected})">
+      </div>
+
+      <div class="change-box">
+        <div class="change-label">DIFERENCIA</div>
+        <div id="closeDiff" class="change-amount" style="color:var(--yellow)">—</div>
+      </div>
+
+      <button class="btn btn-red btn-block btn-lg" onclick="R.confirmCloseCash(${expected})">
+        Confirmar cierre
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  calcCloseDiff(expected){
+    const actual = Number(U.$('actualCash').value)||0;
+    const diff = U.round(actual - expected);
+    const el = U.$('closeDiff');
+
+    el.textContent = U.money(diff);
+    el.style.color = diff<0 ? 'var(--red)' : diff>0 ? 'var(--green)' : 'var(--yellow)';
+  },
+
+  confirmCloseCash(expected){
+    const actual = Number(U.$('actualCash').value);
+
+    if(isNaN(actual) || actual < 0){
+      toast('Introduce el efectivo contado','err');
+      return;
+    }
+
+    const result = DB.closeRegister(actual);
+
+    this.closeModal();
+    this.renderCaja();
+
+    if(result){
+      const d = result.difference;
+      toast(
+        d===0 ? 'Caja cuadrada' : d>0 ? 'Sobran '+U.money(d) : 'Faltan '+U.money(Math.abs(d)),
+        d===0 ? 'ok' : 'err'
+      );
+    }
+  },
+
+  /* CONFIG */
+  renderConfig(){
+    const c = DB.data.config;
+
+    const themes = [
+      {id:'dark',name:'🌙 Oscuro'},
+      {id:'light',name:'☀️ Claro'},
+      {id:'beach',name:'🏖️ Playa'},
+      {id:'sunset',name:'🌅 Atardecer'},
+      {id:'ocean',name:'🌊 Océano'},
+      {id:'neon',name:'🌈 Neón'}
+    ];
+
+    const colors = [
+      '#f43f5e',
+      '#ff6b35',
+      '#22d3ee',
+      '#10b981',
+      '#8b5cf6',
+      '#f59e0b',
+      '#ef4444',
+      '#ec4899',
+      '#14b8a6',
+      '#84cc16',
+      '#3b82f6',
+      '#ffffff'
+    ];
+
+    U.$('configArea').innerHTML = `
+      <div class="setting-item">
+        <div class="setting-icon">🏪</div>
+        <div class="setting-body">
+          <div class="setting-title">Nombre del negocio</div>
+          <div class="setting-desc">${U.esc(c.businessName)}</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="R.editBusinessName()">Cambiar</button>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-icon">${c.businessEmoji}</div>
+        <div class="setting-body">
+          <div class="setting-title">Icono del negocio</div>
+          <div class="setting-desc">Personaliza el emoji principal</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="R.editBusinessEmoji()">Cambiar</button>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-icon">📦</div>
+        <div class="setting-body">
+          <div class="setting-title">Control de stock</div>
+          <div class="setting-desc">${c.stockEnabled?'Activado':'Desactivado'}</div>
+        </div>
+        <div class="toggle ${c.stockEnabled?'on':''}" onclick="R.toggleStock()"></div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-icon">✨</div>
+        <div class="setting-body">
+          <div class="setting-title">Animaciones</div>
+          <div class="setting-desc">${c.animations?'Activadas':'Desactivadas'}</div>
+        </div>
+        <div class="toggle ${c.animations?'on':''}" onclick="R.toggleAnimations()"></div>
+      </div>
+
+      <div class="pg-subtitle">🎨 Temas</div>
+      <div class="theme-grid">
+        ${themes.map(t=>`
+          <button class="theme-card ${c.theme===t.id?'on':''}" onclick="R.setTheme('${t.id}')">
+            ${t.name}
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="pg-subtitle">🌈 Color de acento</div>
+      <div class="color-grid">
+        ${colors.map(color=>`
+          <button class="color-dot" style="background:${color}" onclick="R.setAccentColor('${color}')"></button>
+        `).join('')}
+      </div>
+
+      <button class="btn btn-outline btn-block mt12" onclick="R.clearAccentColor()">
+        Restaurar color del tema
+      </button>
+
+      <div class="pg-subtitle">🗄️ Datos</div>
+
+      <button class="btn btn-outline btn-block mb8" onclick="DB.exportExcel()">
+        📥 Exportar Excel
+      </button>
+
+      <button class="btn btn-outline btn-block mb8" onclick="DB.importExcel()">
+        📂 Importar Excel
+      </button>
+
+      <button class="btn btn-red btn-block" onclick="R.resetApp()">
+        🗑️ Borrar todos los datos
+      </button>
+
+      <div class="center muted small mt16">
+        Chiringuito TPV v7 · Datos guardados localmente
+      </div>
+    `;
+  },
+
+  editBusinessName(){
+    const name = prompt('Nombre del negocio:',DB.data.config.businessName);
+
+    if(name && name.trim()){
+      DB.data.config.businessName = name.trim();
+      DB.save();
+      DB.applyHeader();
+      this.renderConfig();
+    }
+  },
+
+  editBusinessEmoji(){
+    const emojis = ['🏖️','🍹','🌊','☀️','⛱️','🐚','🦀','🌴','🍺','🍔','🏪','🎵','🍕','🥂','🌅','🎪','🥥','🍤'];
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">Elige icono</div>
+        <button class="modal-close" onclick="R.closeModal()">✕</button>
+      </div>
+
+      <div class="emoji-grid">
+        ${emojis.map(e=>`
+          <button class="emoji-opt" onclick="R.setBusinessEmoji('${e}')">${e}</button>
+        `).join('')}
+      </div>
+    `;
+
+    U.$('overlay').classList.add('on');
+  },
+
+  setBusinessEmoji(e){
+    DB.data.config.businessEmoji = e;
+    DB.save();
+    DB.applyHeader();
+    this.closeModal();
+    this.renderConfig();
+  },
+
+  toggleStock(){
+    DB.data.config.stockEnabled = !DB.data.config.stockEnabled;
+    DB.save();
+    this.renderConfig();
+    this.renderVenta();
+    toast(DB.data.config.stockEnabled?'Stock activado':'Stock desactivado');
+  },
+
+  toggleAnimations(){
+    DB.data.config.animations = !DB.data.config.animations;
+    DB.save();
+    DB.applyTheme();
+    this.renderConfig();
+    toast(DB.data.config.animations?'Animaciones activadas':'Animaciones desactivadas');
+  },
+
+  setTheme(theme){
+    DB.data.config.theme = theme;
+    DB.save();
+    DB.applyTheme();
+    this.renderConfig();
+  },
+
+  setAccentColor(color){
+    DB.data.config.accentColor = color;
+    DB.save();
+    DB.applyTheme();
+    toast('Color actualizado');
+  },
+
+  clearAccentColor(){
+    DB.data.config.accentColor = '';
+    DB.save();
+    DB.applyTheme();
+    toast('Color restaurado');
+  },
+
+  resetApp(){
+    if(!confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) return;
+    if(!confirm('¿Estás completamente seguro?')) return;
+
+    localStorage.removeItem(DB_KEY);
+    location.reload();
+  },
+
+  closeModal(){
+    U.$('overlay').classList.remove('on');
+  }
+};
+
+/* =========================
+   SINCRONIZACIÓN QR + TEXTO
+========================= */
+const SYNC = {
+  _stream:null,
+  _scanning:false,
+
+  _loadScript(src,globalName){
+    return new Promise((resolve,reject)=>{
+      if(window[globalName]) return resolve();
+
+      const existing = document.querySelector(`script[src="${src}"]`);
+
+      if(existing){
+        existing.addEventListener('load',()=>resolve());
+        existing.addEventListener('error',()=>reject(new Error('No se pudo cargar '+globalName)));
+        return;
+      }
+
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = ()=>resolve();
+      s.onerror = ()=>reject(new Error('No se pudo cargar '+globalName));
+      document.head.appendChild(s);
+    });
+  },
+
+  async _ensureQR(){
+    if(window.QRCode) return;
+    await this._loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js','QRCode');
+  },
+
+  async _ensureJsQR(){
+    if(window.jsQR) return;
+    await this._loadScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js','jsQR');
+  },
+
+  _makePayload(includeSales=true){
+    return {
+      v:7,
+      mode:includeSales ? 'full' : 'catalog',
+      ts:Date.now(),
+      cfg:DB.data.config,
+      prod:DB.data.products,
+      cat:DB.data.categories,
+      sales:includeSales ? DB.data.sales : {},
+      reg:DB.data.register
+    };
+  },
+
+  _encode(obj){
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  },
+
+  _decode(raw){
+    let code = String(raw || '').trim();
+
+    if(code.includes('CHIRINGUITO-SYNC:')){
+      code = code.split('CHIRINGUITO-SYNC:')[1].trim();
+    }
+
+    if(code.startsWith('SYNC:')){
+      code = code.slice(5).trim();
+    }
+
+    return JSON.parse(decodeURIComponent(escape(atob(code))));
+  },
+
+  generateCode(){
+    const fullPayload = this._makePayload(true);
+    const fullCode = this._encode(fullPayload);
+
+    let qrPayload = fullPayload;
+    let qrCode = fullCode;
+    let qrText = 'QR completo';
+
+    if(fullCode.length > 1800){
+      qrPayload = this._makePayload(false);
+      qrCode = this._encode(qrPayload);
+      qrText = 'QR de catálogo';
+    }
+
+    const fullKB = (fullCode.length/1024).toFixed(1);
+    const qrKB = (qrCode.length/1024).toFixed(1);
+
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">📤 Enviar datos</div>
+        <button class="modal-close" onclick="SYNC.stop();R.closeModal()">✕</button>
+      </div>
+
+      <div class="center mb12">
+        <div class="bold">Sincronización por QR</div>
+        <div class="small muted">${qrText} · ${qrKB} KB</div>
+      </div>
+
+      <div id="qrArea" class="center">
+        <div class="qr-box">
+          <canvas id="syncQrCanvas"></canvas>
+        </div>
+        <div id="qrMsg" class="small muted">Generando QR...</div>
+      </div>
+
+      <div class="glass small muted" style="line-height:1.6;margin-top:14px">
+        Si tienes muchas ventas, el QR puede ser solo de catálogo.
+        Para copiar absolutamente todo usa el código completo.
+      </div>
+
+      <div class="field">
+        <label class="label">Código completo (${fullKB} KB)</label>
+        <textarea id="syncFullCode" class="ipt" readonly onclick="this.select()" style="height:120px;font-size:.72rem">${fullCode}</textarea>
+      </div>
+
+      <button class="btn btn-accent btn-block btn-lg" onclick="SYNC.copyFullCode()">
+        📋 Copiar código completo
+      </button>
+
+      <button class="btn btn-outline btn-block mt8" onclick="SYNC.shareFullCode()">
+        📤 Compartir por WhatsApp / sistema
+      </button>
+
+      <button class="btn btn-ghost btn-block mt8" onclick="SYNC.stop();R.closeModal()">
+        Cerrar
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+
+    setTimeout(()=>this._drawQR(qrCode),100);
+  },
+
+  async _drawQR(code){
+    const qrMsg = U.$('qrMsg');
+    const canvas = U.$('syncQrCanvas');
+
+    try{
+      if(code.length > 2200){
+        qrMsg.innerHTML = '⚠️ Demasiados datos para QR. Usa el código de texto.';
+        if(canvas) canvas.style.display = 'none';
+        return;
+      }
+
+      await this._ensureQR();
+
+      QRCode.toCanvas(canvas,code,{
+        width:260,
+        margin:2,
+        errorCorrectionLevel:'L'
+      },err=>{
+        if(err){
+          console.error(err);
+          qrMsg.innerHTML = '⚠️ No se pudo generar el QR. Usa el código de texto.';
+        }else{
+          qrMsg.innerHTML = 'Escanea este QR desde el otro dispositivo';
+        }
+      });
+    }catch(err){
+      console.error(err);
+      qrMsg.innerHTML = '⚠️ Librería QR no disponible. Usa el código de texto.';
+      if(canvas) canvas.style.display = 'none';
+    }
+  },
+
+  copyFullCode(){
+    const ta = U.$('syncFullCode');
+    if(!ta) return;
+
+    ta.select();
+    ta.setSelectionRange(0,999999);
+
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(ta.value)
+        .then(()=>toast('Código copiado'))
+        .catch(()=>{
+          document.execCommand('copy');
+          toast('Código copiado');
+        });
+    }else{
+      document.execCommand('copy');
+      toast('Código copiado');
+    }
+  },
+
+  shareFullCode(){
+    const ta = U.$('syncFullCode');
+    if(!ta) return;
+
+    const text = 'CHIRINGUITO-SYNC:\n\n' + ta.value;
+
+    if(navigator.share){
+      navigator.share({
+        title:'Chiringuito TPV - Sincronización',
+        text
+      }).catch(()=>{});
+    }else{
+      this.copyFullCode();
+      toast('Código copiado. Pégalo en WhatsApp.');
+    }
+  },
+
+  receiveCode(){
+    U.$('modalBox').innerHTML = `
+      <div class="modal-head">
+        <div class="modal-title">📥 Recibir datos</div>
+        <button class="modal-close" onclick="SYNC.stop();R.closeModal()">✕</button>
+      </div>
+
+      <div class="center mb12">
+        <div class="bold">Escanea un QR o pega el código</div>
+        <div class="small muted">Puedes usar cámara, foto o texto</div>
+      </div>
+
+      <video id="syncVideo" autoplay playsinline muted style="width:100%;border-radius:14px;background:#000;display:none;margin-bottom:10px"></video>
+      <canvas id="syncScanCanvas" style="display:none"></canvas>
+
+      <div id="scanStatus" class="glass center small muted">
+        Preparando cámara...
+      </div>
+
+      <button class="btn btn-outline btn-block mt12" onclick="SYNC.startCamera()">
+        📷 Activar cámara
+      </button>
+
+      <input id="qrImageInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="SYNC.processImageFile(this)">
+
+      <button class="btn btn-outline btn-block mt8" onclick="U.$('qrImageInput').click()">
+        🖼️ Leer QR desde foto
+      </button>
+
+      <div class="field mt12">
+        <label class="label">O pega aquí el código recibido</label>
+        <textarea id="pasteSyncCode" class="ipt" style="height:120px;font-size:.72rem" placeholder="Pega aquí el código..."></textarea>
+      </div>
+
+      <button class="btn btn-green btn-block btn-lg" onclick="SYNC.importPastedCode()">
+        ✅ Importar código pegado
+      </button>
+
+      <button class="btn btn-ghost btn-block mt8" onclick="SYNC.stop();R.closeModal()">
+        Cancelar
+      </button>
+    `;
+
+    U.$('overlay').classList.add('on');
+
+    setTimeout(()=>this.startCamera(),250);
+  },
+
+  async startCamera(){
+    const video = U.$('syncVideo');
+    const status = U.$('scanStatus');
+    const canvas = U.$('syncScanCanvas');
+
+    if(!video || !status || !canvas) return;
+
+    this.stop();
+
+    try{
+      await this._ensureJsQR();
+
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        throw new Error('Cámara no disponible');
+      }
+
+      this._stream = await navigator.mediaDevices.getUserMedia({
+        video:{
+          facingMode:'environment',
+          width:{ideal:900},
+          height:{ideal:900}
+        }
+      });
+
+      video.srcObject = this._stream;
+      video.style.display = 'block';
+      status.textContent = 'Apunta la cámara al QR';
+
+      this._scanning = true;
+
+      const ctx = canvas.getContext('2d');
+
+      const loop = ()=>{
+        if(!this._scanning) return;
+
+        if(video.readyState === video.HAVE_ENOUGH_DATA){
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+
+          ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+          try{
+            const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+            const code = jsQR(img.data,img.width,img.height,{
+              inversionAttempts:'dontInvert'
+            });
+
+            if(code && code.data){
+              this._processRawCode(code.data);
+              return;
             }
-        };
-        const SYNC = {
-            generate(){
-                const data = btoa(JSON.stringify(DB.data));
-                document.getElementById('mb').innerHTML = `<h3>Código para compartir</h3><textarea style="width:100%;height:100px">${data}</textarea>`;
-                document.getElementById('ov').classList.add('on');
-            },
-            receive(){
-                const code = prompt("Pega el código:");
-                if(code){
-                    DB.data = JSON.parse(atob(code));
-                    DB.save();
-                    location.reload();
-                }
-            }
-        };
-        const NAV = {
-            go(p, btn){
-                document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
-                document.getElementById('pg-'+p).classList.add('on');
-                document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
-                btn.classList.add('on');
-            }
-        };
-        R.renderProducts();
-    </script>
+          }catch(e){
+            console.error(e);
+          }
+        }
+
+        requestAnimationFrame(loop);
+      };
+
+      video.onloadedmetadata = ()=>{
+        requestAnimationFrame(loop);
+      };
+
+    }catch(err){
+      console.error(err);
+      status.innerHTML = `
+        ⚠️ No se pudo usar la cámara.<br>
+        Usa "Leer QR desde foto" o pega el código.
+      `;
+    }
+  },
+
+  stop(){
+    this._scanning = false;
+
+    if(this._stream){
+      this._stream.getTracks().forEach(t=>t.stop());
+      this._stream = null;
+    }
+
+    const video = U.$('syncVideo');
+
+    if(video){
+      video.srcObject = null;
+      video.style.display = 'none';
+    }
+  },
+
+  async processImageFile(input){
+    const file = input.files && input.files[0];
+    if(!file) return;
+
+    try{
+      await this._ensureJsQR();
+
+      const img = new Image();
+
+      img.onload = ()=>{
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img,0,0);
+
+        const data = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const code = jsQR(data.data,data.width,data.height);
+
+        if(code && code.data){
+          this._processRawCode(code.data);
+        }else{
+          toast('No se detectó ningún QR','err');
+        }
+
+        URL.revokeObjectURL(img.src);
+      };
+
+      img.src = URL.createObjectURL(file);
+
+    }catch(err){
+      console.error(err);
+      toast('No se pudo leer la imagen','err');
+    }
+  },
+
+  importPastedCode(){
+    const txt = U.$('pasteSyncCode')?.value.trim();
+
+    if(!txt){
+      toast('Pega un código primero','err');
+      return;
+    }
+
+    this._processRawCode(txt);
+  },
+
+  _processRawCode(raw){
+    try{
+      const data = this._decode(raw);
+
+      if(data.v !== 7){
+        throw new Error('Versión incompatible');
+      }
+
+      const myDeviceId = DB.data.config.deviceId;
+
+      if(data.cat) DB.data.categories = data.cat;
+      if(data.prod) DB.data.products = data.prod;
+
+      if(data.sales){
+        Object.assign(DB.data.sales,data.sales);
+      }
+
+      if(data.cfg){
+        Object.assign(DB.data.config,data.cfg);
+        DB.data.config.deviceId = myDeviceId;
+      }
+
+      if(data.reg){
+        DB.data.register = data.reg;
+      }
+
+      if(!DB.data.syncLog) DB.data.syncLog = [];
+
+      DB.data.syncLog.push({
+        ts:Date.now(),
+        from:data.cfg?.deviceId || '?',
+        mode:data.mode || 'unknown'
+      });
+
+      DB.migrate();
+      DB.save();
+      DB.applyTheme();
+      DB.applyHeader();
+
+      R.renderAll();
+
+      this.stop();
+      R.closeModal();
+
+      if(data.mode === 'catalog'){
+        toast('Catálogo sincronizado');
+      }else{
+        toast('Datos sincronizados correctamente');
+      }
+
+    }catch(err){
+      console.error(err);
+      toast('Código QR inválido o corrupto','err');
+    }
+  }
+};
+
+/* =========================
+   INICIALIZACIÓN
+========================= */
+DB.load();
+R.renderAll();
+U.$('histDate').value = U.todayStr();
+
+setInterval(()=>DB.save(),30000);
+
+window.addEventListener('beforeunload',()=>DB.save());
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+
+setTimeout(()=>toast('Chiringuito TPV listo'),600);
+</script>
+
 </body>
 </html>
