@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chiringuito TPV">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>Chiringuito TPV</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+:root{
+--bg:#0f172a;--bg2:#1e293b;--card:#1e293b;--card2:#334155;
+--accent:#f43f5e;--accent2:#fb7185;--green:#10b981;--yellow:#f59e0b;
+--red:#ef4444;--blue:#38bdf8;--text:#f8fafc;--muted:#94a3b8;
+--border:rgba(148,163,184,.2);--input-bg:rgba(148,163,184,.1);
+--shadow:0 4px 16px rgba(0,0,0,.3);--nav-bg:rgba(15,23,42,.97);
+--radius:16px;--radius-sm:12px;
+}
+[data-theme="light"]{
+--bg:#f8fafc;--bg2:#ffffff;--card:#ffffff;--card2:#f1f5f9;
+--accent:#e11d48;--accent2:#f43f5e;--green:#059669;--yellow:#d97706;
+--red:#dc2626;--blue:#0284c7;--text:#0f172a;--muted:#64748b;
+--border:rgba(15,23,42,.12);--input-bg:rgba(15,23,42,.04);
+--shadow:0 4px 16px rgba(0,0,0,.07);--nav-bg:rgba(255,255,255,.97);
+}
+[data-theme="beach"]{
+--bg:#0a0e27;--bg2:#1a1f3a;--card:#1e2540;--card2:#2a3354;
+--accent:#ff6b35;--accent2:#ff8c61;--green:#06d6a0;--yellow:#ffd166;
+--red:#ef476f;--blue:#118ab2;--text:#e8f1ff;--muted:#8b9dc3;
+--border:rgba(139,157,195,.2);--input-bg:rgba(139,157,195,.1);
+--shadow:0 4px 16px rgba(0,0,0,.4);--nav-bg:rgba(10,14,39,.97);
+}
+[data-theme="sunset"]{
+--bg:#1c1917;--bg2:#292524;--card:#292524;--card2:#44403c;
+--accent:#f97316;--accent2:#fb923c;--green:#84cc16;--yellow:#fde047;
+--red:#ef4444;--blue:#06b6d4;--text:#fafaf9;--muted:#a8a29e;
+--border:rgba(168,162,158,.2);--input-bg:rgba(168,162,158,.1);
+--shadow:0 4px 16px rgba(0,0,0,.35);--nav-bg:rgba(28,25,23,.97);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+background:var(--bg);color:var(--text);
+height:100%;overflow:hidden;display:flex;flex-direction:column;
+transition:background .3s,color .3s;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+input,select{outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+.hdr{
+position:sticky;top:0;z-index:80;padding:env(safe-area-inset-top) 16px 12px;
+padding-top:calc(env(safe-area-inset-top) + 12px);
+background:var(--nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+border-bottom:1px solid var(--border);
+display:flex;justify-content:space-between;align-items:center;
+}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-title{font-weight:800;font-size:1.1rem;line-height:1}
+.hdr-sub{font-size:.68rem;color:var(--muted);margin-top:2px}
+.hdr-badge{
+font-size:.65rem;color:var(--muted);background:var(--card2);
+padding:4px 9px;border-radius:50px;
+}
+.nav{
+position:fixed;bottom:0;left:0;right:0;z-index:80;
+background:var(--nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+border-top:1px solid var(--border);display:flex;
+padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+flex:1;padding:8px 2px 6px;display:flex;flex-direction:column;
+align-items:center;gap:2px;color:var(--muted);font-size:.62rem;
+font-weight:600;transition:color .2s;position:relative;
+}
+.nav-btn.on{color:var(--accent)}
+.nav-btn.on::after{
+content:'';position:absolute;top:-1px;left:22%;right:22%;
+height:2px;background:var(--accent);border-radius:0 0 3px 3px;
+}
+.nav-icon{font-size:1.3rem;line-height:1}
+.pages{
+flex:1;overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;
+padding:14px;padding-bottom:calc(env(safe-area-inset-bottom) + 80px);
+}
+.pg{display:none}
+.pg.on{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.glass{
+background:var(--card);border:1px solid var(--border);
+border-radius:var(--radius);padding:16px;margin-bottom:12px;
+}
+.row{display:flex;gap:8px;align-items:center}
+.row-between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.flex1{flex:1}.wrap{flex-wrap:wrap}.center{text-align:center}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.pg-title{font-size:1.3rem;font-weight:800;margin-bottom:14px}
+.pg-subtitle{font-size:.95rem;font-weight:700;margin:16px 0 10px}
+.muted{color:var(--muted)}.small{font-size:.78rem}
+.bold{font-weight:800}.accent{color:var(--accent)}.green{color:var(--green)}
+.red{color:var(--red)}.yellow{color:var(--yellow)}.blue{color:var(--blue)}
+.btn{
+display:inline-flex;align-items:center;justify-content:center;gap:6px;
+border-radius:var(--radius-sm);padding:11px 16px;font-weight:700;
+font-size:.85rem;transition:transform .15s,opacity .15s;white-space:nowrap;
+}
+.btn:active{transform:scale(.96);opacity:.85}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--muted)}
+.btn-sm{padding:8px 12px;font-size:.78rem}
+.btn-lg{padding:14px 20px;font-size:.95rem}
+.btn-block{width:100%}
+.btn:disabled{opacity:.4;pointer-events:none}
+.ipt{
+width:100%;padding:12px 14px;border:1.5px solid var(--border);
+border-radius:var(--radius-sm);background:var(--input-bg);
+color:var(--text);font-size:.9rem;transition:border-color .2s;
+}
+.ipt:focus{border-color:var(--accent)}
+.ipt-lg{padding:14px;font-size:1.1rem;font-weight:700;text-align:center}
+.ipt::placeholder{color:var(--muted)}
+.label{font-size:.8rem;color:var(--muted);margin-bottom:5px;display:block;font-weight:600}
+.field{margin-bottom:13px}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.95rem;opacity:.5}
+.search-ipt{
+width:100%;padding:12px 13px 12px 38px;border:1.5px solid var(--border);
+border-radius:var(--radius-sm);background:var(--input-bg);color:var(--text);font-size:.88rem;
+}
+.search-ipt:focus{border-color:var(--accent)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+white-space:nowrap;padding:8px 14px;border-radius:50px;
+background:var(--card);border:1.5px solid var(--border);
+color:var(--muted);font-size:.8rem;font-weight:600;transition:all .2s;
+}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(min-width:480px){.pgrid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:700px){.pgrid{grid-template-columns:repeat(5,1fr)}}
+.pcard{
+position:relative;background:var(--card);border:1.5px solid transparent;
+border-radius:var(--radius-sm);padding:12px 6px 10px;
+display:flex;flex-direction:column;align-items:center;gap:4px;
+text-align:center;transition:border-color .15s,transform .1s;
+user-select:none;min-height:96px;width:100%;
+}
+.pcard:active{transform:scale(.94);border-color:var(--accent)}
+.pcard.out{opacity:.3;pointer-events:none}
+.pcard-emoji{font-size:1.9rem;line-height:1;display:block}
+.pcard-name{font-size:.73rem;color:var(--muted);line-height:1.2;overflow:hidden;max-height:2.4em;word-break:break-word}
+.pcard-price{font-weight:800;color:var(--accent);font-size:.85rem}
+.stock-badge{
+position:absolute;top:5px;right:5px;font-size:.6rem;
+background:var(--bg);color:var(--muted);padding:2px 6px;border-radius:50px;
+}
+.stock-badge.low{color:var(--red);background:rgba(239,68,68,.15)}
+.cart{
+background:var(--card);border-top:2px solid var(--accent);
+border-radius:18px 18px 0 0;margin:16px -14px 0;padding:16px;
+}
+.cart-item{
+display:grid;grid-template-columns:1fr auto auto;gap:8px;
+align-items:center;padding:8px 0;border-bottom:1px solid var(--border);
+}
+.cart-name{font-size:.85rem;line-height:1.2}
+.cart-qty{display:flex;align-items:center;gap:8px}
+.qty-btn{
+width:28px;height:28px;border-radius:50%;
+border:1.5px solid var(--border);background:var(--card2);
+display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;
+}
+.cart-price{min-width:58px;text-align:right;font-weight:800;color:var(--accent)}
+.cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--border)}
+.cart-total-label{font-size:1.05rem;font-weight:800}
+.cart-total-amount{font-size:1.45rem;font-weight:900;color:var(--green)}
+.pay-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.pay-btn{
+padding:10px 6px;border:2px solid var(--border);border-radius:var(--radius-sm);
+background:var(--card2);text-align:center;font-size:.75rem;font-weight:700;
+color:var(--muted);transition:all .2s;
+}
+.pay-btn span{display:block;font-size:1.15rem;margin-bottom:3px}
+.pay-btn.on{border-color:var(--accent);color:var(--accent);background:rgba(244,63,94,.09)}
+.overlay{
+position:fixed;inset:0;z-index:200;
+background:rgba(0,0,0,.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+display:none;align-items:flex-end;justify-content:center;
+}
+.overlay.on{display:flex}
+.modal{
+width:100%;max-width:480px;max-height:90vh;overflow-y:auto;
+background:var(--bg2);border-radius:22px 22px 0 0;
+padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+border-top:1px solid var(--border);animation:slideUp .22s ease;
+}
+@keyframes slideUp{from{transform:translateY(50px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:1.1rem;font-weight:800}
+.modal-close{width:32px;height:32px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.ticket{background:#fff;color:#111;border-radius:12px;padding:16px;font-family:'Courier New',monospace;font-size:.82rem;margin:12px 0}
+.ticket-center{text-align:center}
+.ticket-line{display:flex;justify-content:space-between;padding:3px 0}
+.ticket-dash{border-top:1px dashed #ccc;margin:6px 0}
+.ticket-total{font-weight:900;font-size:1rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.stat{background:var(--card);border-radius:var(--radius-sm);padding:13px 9px;text-align:center}
+.stat-val{font-size:1.25rem;font-weight:900}
+.stat-lbl{font-size:.7rem;color:var(--muted);margin-top:3px}
+.cash-status{text-align:center;border-radius:var(--radius-sm);padding:11px;font-weight:900;margin-bottom:13px;border:1.5px solid}
+.cash-status.open{color:var(--green);border-color:var(--green);background:rgba(16,185,129,.1)}
+.cash-status.closed{color:var(--red);border-color:var(--red);background:rgba(239,68,68,.1)}
+.cash-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.cash-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.cash-qbtn{padding:11px 5px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);font-weight:800;text-align:center;font-size:.82rem}
+.cash-qbtn:active{border-color:var(--accent)}
+.change-box{text-align:center;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin:12px 0}
+.change-amount{font-size:2rem;font-weight:900;color:var(--green)}
+.change-label{font-size:.75rem;color:var(--muted)}
+.list-item{background:var(--card);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:11px}
+.list-item-icon{font-size:1.35rem;flex-shrink:0}
+.list-item-body{flex:1;min-width:0}
+.list-item-title{font-weight:700;font-size:.88rem}
+.list-item-sub{font-size:.74rem;color:var(--muted);margin-top:2px}
+.list-item-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:32px;height:32px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.emoji-opt{width:38px;height:38px;border-radius:9px;border:2px solid var(--border);background:var(--card2);font-size:1.15rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.emoji-opt.on{border-color:var(--accent);background:rgba(244,63,94,.13)}
+.sale-card{background:var(--card);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:8px}
+.sale-head{display:flex;justify-content:space-between;margin-bottom:4px}
+.pill{display:inline-block;padding:3px 9px;border-radius:50px;font-size:.68rem;font-weight:700;margin-top:4px}
+.pill-cash{background:rgba(16,185,129,.15);color:var(--green)}
+.pill-card{background:rgba(56,189,248,.15);color:var(--blue)}
+.pill-bizum{background:rgba(245,158,11,.15);color:var(--yellow)}
+.setting-item{background:var(--card);border-radius:var(--radius-sm);padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:13px}
+.setting-icon{font-size:1.25rem;flex-shrink:0}
+.setting-body{flex:1;min-width:0}
+.setting-title{font-weight:700;font-size:.88rem}
+.setting-desc{font-size:.73rem;color:var(--muted);margin-top:2px}
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.theme-card{padding:13px;border:2px solid var(--border);border-radius:var(--radius-sm);text-align:center;font-weight:700;font-size:.85rem;transition:border-color .2s}
+.theme-card.on{border-color:var(--accent)}
+.theme-preview{width:100%;height:26px;border-radius:7px;margin-bottom:7px;display:flex;overflow:hidden}
+.theme-preview span{flex:1}
+.sync-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;margin-bottom:10px}
+.sync-card:active{transform:scale(.98)}
+.sync-icon{font-size:2.2rem;margin-bottom:7px}
+.sync-title{font-weight:800;font-size:.9rem;margin-bottom:4px}
+.sync-desc{font-size:.73rem;color:var(--muted)}
+.qr-box{background:#fff;padding:14px;border-radius:var(--radius-sm);display:inline-block;margin:12px 0}
+#qrVideo{width:100%;border-radius:var(--radius-sm);margin:10px 0;display:block}
+.toggle{position:relative;width:46px;height:26px;border-radius:50px;background:var(--card2);border:2px solid var(--border);transition:all .2s;cursor:pointer;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:all .2s}
+.toggle.on{background:var(--accent);border-color:var(--accent)}
+.toggle.on::after{left:20px;background:#fff}
+.empty{text-align:center;padding:36px 16px;color:var(--muted)}
+.empty-icon{font-size:2.3rem;margin-bottom:8px}
+.toast{
+position:fixed;top:calc(env(safe-area-inset-top) + 62px);left:50%;
+transform:translateX(-50%) translateY(-80px);
+z-index:300;background:var(--bg2);border:1px solid var(--border);
+padding:10px 18px;border-radius:50px;font-size:.85rem;font-weight:600;
+box-shadow:var(--shadow);transition:transform .22s,opacity .22s;opacity:0;
+max-width:88%;text-align:center;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:var(--green)}
+.toast.err{border-color:var(--red)}
+.install-banner{
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+padding:12px 16px;display:flex;align-items:center;gap:12px;
+cursor:pointer;
+}
+.install-banner-text{flex:1;font-size:.82rem;font-weight:600;color:#fff}
+.install-banner-close{color:rgba(255,255,255,.7);font-size:1.1rem}
+</style>
+</head>
+<body data-theme="dark">
+
+<div id="toast" class="toast"></div>
+
+<div id="installBanner" class="install-banner" style="display:none" onclick="PWA.install()">
+<span style="font-size:1.4rem">📲</span>
+<div class="install-banner-text">Instalar como app en tu móvil</div>
+<button class="install-banner-close" onclick="PWA.hideBanner(event)">✕</button>
+</div>
+
+<header class="hdr">
+<div class="hdr-left">
+<span style="font-size:1.35rem" id="hdrEmoji">🏖️</span>
+<div>
+<div class="hdr-title" id="hdrName">Chiringuito TPV</div>
+<div class="hdr-sub" id="lastSaved">Listo</div>
+</div>
+</div>
+<div class="hdr-right">
+<span class="hdr-badge" id="syncBadge">📡</span>
+</div>
+</header>
+
+<div class="pages" id="pages">
+
+<div class="pg on" id="pg-venta">
+<div class="search-wrap">
+<span class="search-icon">🔍</span>
+<input class="search-ipt" id="searchInput" placeholder="Buscar producto..." oninput="R.searchDebounce()">
+</div>
+<div class="tabs" id="catTabs"></div>
+<div class="pgrid" id="prodGrid"></div>
+<div id="cartArea"></div>
+</div>
+
+<div class="pg" id="pg-productos">
+<div class="pg-title">📦 Productos</div>
+<div class="row mb12 wrap" style="gap:8px">
+<button class="btn btn-outline btn-sm" onclick="DB.exportExcel()">📥 Excel</button>
+<button class="btn btn-outline btn-sm" onclick="DB.importExcel()">📂 Importar</button>
+<button class="btn btn-accent btn-sm" style="margin-left:auto" onclick="R.openProductModal()">➕ Añadir</button>
+</div>
+<div class="row-between"><div class="pg-subtitle" style="margin:0">📁 Categorías</div><button class="btn btn-accent btn-sm" onclick="R.openCategoryModal()">➕</button></div>
+<div style="margin-top:8px" id="catList"></div>
+<div class="pg-subtitle">📋 Lista de productos</div>
+<div id="prodList"></div>
+</div>
+
+<div class="pg" id="pg-historial">
+<div class="pg-title">📊 Historial</div>
+<div class="row mb12" style="gap:8px">
+<input type="date" class="ipt flex1" id="histDate" onchange="R.renderHistorial()">
+<button class="btn btn-accent btn-sm" onclick="U.$('histDate').value=U.todayStr();R.renderHistorial()">Hoy</button>
+<button class="btn btn-outline btn-sm" onclick="DB.exportExcel()">📥</button>
+</div>
+<div id="statsArea"></div>
+<div class="pg-subtitle">🏆 Top productos</div>
+<div id="topArea" class="glass"></div>
+<div class="pg-subtitle">📜 Ventas</div>
+<div id="salesArea"></div>
+</div>
+
+<div class="pg" id="pg-caja">
+<div class="pg-title">💰 Caja</div>
+<div id="cashStatusBar"></div>
+<div class="row mb12" style="gap:8px">
+<button class="btn btn-green btn-sm flex1" id="btnOpenCash" onclick="R.openCashOpenModal()">🔓 Abrir caja</button>
+<button class="btn btn-red btn-sm flex1" id="btnCloseCash" onclick="R.openCashCloseModal()">🔒 Cerrar caja</button>
+</div>
+<div id="cashDetails"></div>
+</div>
+
+<div class="pg" id="pg-sync">
+<div class="pg-title">📡 Sincronizar</div>
+<div class="glass center mb12">
+<div style="font-size:2.2rem;margin-bottom:8px">🔄</div>
+<div class="bold">Conecta tu móvil con el de tu ayudante</div>
+<div class="muted small mt8">Comparte datos entre dispositivos</div>
+</div>
+<div class="sync-card" onclick="SYNC.generateQR()">
+<div class="sync-icon">📱</div>
+<div class="sync-title">Generar QR</div>
+<div class="sync-desc">El otro dispositivo escanea este QR para recibir tus datos</div>
+</div>
+<div class="sync-card" onclick="SYNC.scanQR()">
+<div class="sync-icon">📷</div>
+<div class="sync-title">Escanear QR</div>
+<div class="sync-desc">Escanea el QR del dispositivo principal</div>
+</div>
+<div class="sync-card" onclick="DB.exportExcel()">
+<div class="sync-icon">📂</div>
+<div class="sync-title">Exportar datos</div>
+<div class="sync-desc">Guarda todo como Excel y compártelo</div>
+</div>
+<div class="sync-card" onclick="DB.importExcel()">
+<div class="sync-icon">📥</div>
+<div class="sync-title">Importar datos</div>
+<div class="sync-desc">Carga un Excel de otro dispositivo</div>
+</div>
+<div class="glass" style="margin-top:12px">
+<div class="pg-subtitle" style="margin-top:0">📋 Cómo funciona</div>
+<div class="small muted" style="line-height:1.7">
+<b>Con QR (rápido):</b><br>
+1. Dispositivo principal → Generar QR<br>
+2. Dispositivo ayudante → Escanear QR<br>
+3. Los datos se fusionan automáticamente<br><br>
+<b>Con Excel (backup):</b><br>
+1. Exportar Excel → enviar por WhatsApp<br>
+2. El otro dispositivo lo importa
+</div>
+</div>
+</div>
+
+<div class="pg" id="pg-config">
+<div class="pg-title">⚙️ Configuración</div>
+<div id="configArea"></div>
+</div>
+
+</div>
+
+<nav class="nav">
+<button class="nav-btn on" id="nav-venta" onclick="NAV.go('venta')"><span class="nav-icon">🛒</span>Venta</button>
+<button class="nav-btn" id="nav-productos" onclick="NAV.go('productos')"><span class="nav-icon">📦</span>Productos</button>
+<button class="nav-btn" id="nav-historial" onclick="NAV.go('historial')"><span class="nav-icon">📊</span>Historial</button>
+<button class="nav-btn" id="nav-caja" onclick="NAV.go('caja')"><span class="nav-icon">💰</span>Caja</button>
+<button class="nav-btn" id="nav-sync" onclick="NAV.go('sync')"><span class="nav-icon">📡</span>Sincro</button>
+<button class="nav-btn" id="nav-config" onclick="NAV.go('config')"><span class="nav-icon">⚙️</span>Ajustes</button>
+</nav>
+
+<div class="overlay" id="overlay" onclick="R.closeModalOutside(event)">
+<div class="modal" id="modalBox" onclick="event.stopPropagation()"></div>
+</div>
+<div class="overlay" id="ticketOverlay">
+<div class="modal" id="ticketBox"></div>
+</div>
+
+<script>
+'use strict';
+const PWA={deferredPrompt:null,init(){window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();this.deferredPrompt=e;if(!localStorage.getItem('pwa_banner_hidden')){document.getElementById('installBanner').style.display='flex'}});window.addEventListener('appinstalled',()=>{document.getElementById('installBanner').style.display='none';toast('App instalada ✓')})},async install(){if(this.deferredPrompt){this.deferredPrompt.prompt();const{outcome}=await this.deferredPrompt.userChoice;if(outcome==='accepted'){document.getElementById('installBanner').style.display='none'}this.deferredPrompt=null}else{R.showIOSInstallModal()}},hideBanner(e){e.stopPropagation();document.getElementById('installBanner').style.display='none';localStorage.setItem('pwa_banner_hidden','1')}};
+const U={$:id=>document.getElementById(id),todayStr(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`},timeShort(){return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})},money(v){const n=Number(v)||0;const s=DB.data?.config?.currency||'€';return n.toFixed(2).replace('.',',')+' '+s},round(n){return Math.round((Number(n)||0)*100)/100},id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)},esc(s){return String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]))},vibrate(){navigator.vibrate?.(35)}};
+let _searchTimer,_saveTimer;
+function toast(msg,type='ok'){const t=U.$('toast');t.textContent=msg;t.className='toast show '+type;clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600)}
+const PAGES=['venta','productos','historial','caja','sync','config'];
+const NAV={go(page){PAGES.forEach(p=>{U.$('pg-'+p)?.classList.remove('on');U.$('nav-'+p)?.classList.remove('on')});U.$('pg-'+page).classList.add('on');U.$('nav-'+page).classList.add('on');U.$('pages').scrollTop=0;const actions={venta:()=>R.renderVenta(),productos:()=>{R.renderProductsList();R.renderCategoriesList()},historial:()=>{if(!U.$('histDate').value)U.$('histDate').value=U.todayStr();R.renderHistorial()},caja:()=>R.renderCaja(),config:()=>R.renderConfig()};actions[page]?.()}};
+const DB_KEY='chiringuito_tpv_v4';
+const DB={data:null,_defaults(){return{config:{businessName:'Chiringuito TPV',businessEmoji:'🏖️',currency:'€',theme:'dark',stockEnabled:false,deviceId:'dev_'+U.id()},categories:{c1:{id:'c1',name:'Bebidas',emoji:'🍺',order:1},c2:{id:'c2',name:'Cócteles',emoji:'🍹',order:2},c3:{id:'c3',name:'Tapas',emoji:'🍤',order:3},c4:{id:'c4',name:'Comida',emoji:'🍔',order:4},c5:{id:'c5',name:'Helados',emoji:'🍦',order:5},c6:{id:'c6',name:'Extras',emoji:'🧴',order:6}},products:{p1:{id:'p1',name:'Cerveza',price:2.50,cat:'c1',emoji:'🍺',stock:null},p2:{id:'p2',name:'Tinto verano',price:3.00,cat:'c1',emoji:'🍷',stock:null},p3:{id:'p3',name:'Agua',price:1.50,cat:'c1',emoji:'💧',stock:null},p4:{id:'p4',name:'Refresco',price:2.20,cat:'c1',emoji:'🥤',stock:null},p5:{id:'p5',name:'Café',price:1.50,cat:'c1',emoji:'☕',stock:null},p6:{id:'p6',name:'Mojito',price:6.00,cat:'c2',emoji:'🍹',stock:null},p7:{id:'p7',name:'Gin Tonic',price:7.00,cat:'c2',emoji:'🍸',stock:null},p8:{id:'p8',name:'Sangría',price:3.50,cat:'c2',emoji:'🍷',stock:null},p9:{id:'p9',name:'Patatas bravas',price:4.00,cat:'c3',emoji:'🍟',stock:null},p10:{id:'p10',name:'Gambas',price:8.00,cat:'c3',emoji:'🍤',stock:null},p11:{id:'p11',name:'Hamburguesa',price:7.50,cat:'c4',emoji:'🍔',stock:null},p12:{id:'p12',name:'Ensalada',price:5.50,cat:'c4',emoji:'🥗',stock:null},p13:{id:'p13',name:'Helado',price:3.00,cat:'c5',emoji:'🍦',stock:null},p14:{id:'p14',name:'Polo',price:2.00,cat:'c5',emoji:'🧊',stock:null},p15:{id:'p15',name:'Crema solar',price:5.00,cat:'c6',emoji:'🧴',stock:null}},sales:{},register:{isOpen:false,sessionId:null,initialCash:0,openedAt:null},sessions:{},syncLog:[]}},load(){try{const raw=localStorage.getItem(DB_KEY);if(raw){this.data=JSON.parse(raw);if(!this.data.config.deviceId)this.data.config.deviceId='dev_'+U.id();if(!this.data.sessions)this.data.sessions={};if(!this.data.syncLog)this.data.syncLog=[]}else{this.data=this._defaults();this._persist()}}catch(e){this.data=this._defaults();this._persist()}this._applyTheme();this._applyHeader();this._updateSavedLabel('Datos cargados')},save(){clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>this._persist(),400)},_persist(){try{this.data._ts=Date.now();localStorage.setItem(DB_KEY,JSON.stringify(this.data));this._updateSavedLabel('Guardado '+U.timeShort())}catch(e){toast('Error al guardar: almacenamiento lleno','err')}},_updateSavedLabel(text){const el=U.$('lastSaved');if(el)el.textContent=text},_applyTheme(){document.body.setAttribute('data-theme',this.data.config.theme||'dark')},_applyHeader(){U.$('hdrName').textContent=this.data.config.businessName;U.$('hdrEmoji').textContent=this.data.config.businessEmoji;U.$('syncBadge').textContent='📡 '+this.data.config.deviceId.slice(0,8)},addProduct(p){const id='p_'+U.id();p.id=id;this.data.products[id]=p;this.save();return id},updateProduct(id,updates){if(this.data.products[id]){Object.assign(this.data.products[id],updates);this.save()}},deleteProduct(id){delete this.data.products[id];this.save()},addCategory(c){const id='c_'+U.id();c.id=id;this.data.categories[id]=c;this.save();return id},deleteCategory(id){delete this.data.categories[id];this.save()},addSale(sale){const id='v_'+U.id();sale.id=id;this.data.sales[id]=sale;if(this.data.config.stockEnabled){sale.items.forEach(item=>{const p=this.data.products[item.productId];if(p&&p.stock!==null)p.stock=Math.max(0,p.stock-item.qty)})}this.save();return id},openRegister(initial){const sid='ses_'+U.id();this.data.register={isOpen:true,sessionId:sid,initialCash:Number(initial)||0,openedAt:Date.now()};this.data.sessions[sid]={id:sid,status:'open',initialCash:Number(initial)||0,openedAt:Date.now(),openedDate:U.todayStr(),openedTime:U.timeShort(),deviceId:this.data.config.deviceId};this.save()},closeRegister(actualCash){const sid=this.data.register.sessionId;if(!sid)return null;const sales=Object.values(this.data.sales).filter(s=>s.sessionId===sid);let cash=0,card=0,bizum=0,total=0;sales.forEach(s=>{total+=s.total;if(s.method==='efectivo')cash+=s.total;if(s.method==='tarjeta')card+=s.total;if(s.method==='bizum')bizum+=s.total});const expected=U.round(this.data.register.initialCash+cash);const diff=U.round(Number(actualCash)-expected);const closed={...this.data.sessions[sid],status:'closed',closedAt:Date.now(),closedDate:U.todayStr(),closedTime:U.timeShort(),tickets:sales.length,totalSales:U.round(total),cashSales:U.round(cash),cardSales:U.round(card),bizumSales:U.round(bizum),expectedCash:expected,actualCash:Number(actualCash),difference:diff};this.data.sessions[sid]=closed;this.data.register={isOpen:false,sessionId:null,initialCash:0,openedAt:null};this.save();return closed},exportExcel(){if(typeof XLSX==='undefined'){toast('Error: librería no disponible','err');return}const wb=XLSX.utils.book_new();const prodRows=Object.values(this.data.products).map(p=>({ID:p.id,Nombre:p.name,Precio:p.price,Categoria:this.data.categories[p.cat]?.name||p.cat,CategoriaID:p.cat,Icono:p.emoji,Stock:p.stock!==null?p.stock:''}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(prodRows),'Productos');const catRows=Object.values(this.data.categories).map(c=>({ID:c.id,Nombre:c.name,Icono:c.emoji,Orden:c.order||0}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(catRows),'Categorias');const saleRows=Object.values(this.data.sales).map(s=>({ID:s.id,Fecha:s.date,Hora:s.time,Total:s.total,Metodo:s.method,Entregado:s.given||'',Cambio:s.change||'',Productos:(s.items||[]).map(i=>`${i.qty}x ${i.name}`).join(', '),Sesion:s.sessionId||''}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(saleRows),'Ventas');const sesRows=Object.values(this.data.sessions).map(s=>({ID:s.id,Estado:s.status,FechaApertura:s.openedDate,HoraApertura:s.openedTime,FechaCierre:s.closedDate||'',HoraCierre:s.closedTime||'',EfectivoInicial:s.initialCash,Tickets:s.tickets||0,TotalVentas:s.totalSales||0,Efectivo:s.cashSales||0,Tarjeta:s.cardSales||0,Bizum:s.bizumSales||0,EsperadoCaja:s.expectedCash||'',RealCaja:s.actualCash||'',Diferencia:s.difference||''}));XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sesRows),'Caja');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([this.data.config]),'Config');XLSX.writeFile(wb,`${this.data.config.businessName.replace(/\s/g,'_')}_${U.todayStr()}.xlsx`);toast('Excel exportado ✓')},importExcel(){const inp=document.createElement('input');inp.type='file';inp.accept='.xlsx,.xls';inp.onchange=async e=>{const file=e.target.files[0];if(!file)return;toast('Importando...');try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf);const myId=this.data.config.deviceId;if(wb.Sheets['Categorias']){const rows=XLSX.utils.sheet_to_json(wb.Sheets['Categorias']);this.data.categories={};rows.forEach(r=>{this.data.categories[r.ID]={id:r.ID,name:r.Nombre,emoji:r.Icono||'📁',order:Number(r.Orden)||0}})}if(wb.Sheets['Productos']){const rows=XLSX.utils.sheet_to_json(wb.Sheets['Productos']);this.data.products={};rows.forEach(r=>{this.data.products[r.ID]={id:r.ID,name:r.Nombre,price:Number(r.Precio),cat:r.CategoriaID||r.Categoria,emoji:r.Icono||'📦',stock:r.Stock!==''&&r.Stock!==undefined?Number(r.Stock):null}})}if(wb.Sheets['Ventas']){const rows=XLSX.utils.sheet_to_json(wb.Sheets['Ventas']);rows.forEach(r=>{if(!this.data.sales[r.ID]){this.data.sales[r.ID]={id:r.ID,date:r.Fecha,time:r.Hora,total:Number(r.Total),method:r.Metodo,given:Number(r.Entregado)||0,change:Number(r.Cambio)||0,items:[],sessionId:r.Sesion||''}}})}if(wb.Sheets['Config']){const rows=XLSX.utils.sheet_to_json(wb.Sheets['Config']);if(rows[0]){Object.assign(this.data.config,rows[0]);this.data.config.deviceId=myId}}this.save();this._applyTheme();this._applyHeader();R.renderAll();toast('Importación completada ✓')}catch(err){toast('Error al importar: '+err.message,'err')}};inp.click()}};
+const CART={items:[],method:'efectivo',add(productId){const p=DB.data.products[productId];if(!p)return;if(DB.data.config.stockEnabled&&p.stock!==null&&p.stock<=0){toast('Producto agotado','err');return}const ex=this.items.find(i=>i.productId===productId);if(ex){if(DB.data.config.stockEnabled&&p.stock!==null&&ex.qty>=p.stock){toast('Stock insuficiente','err');return}ex.qty++}else{this.items.push({productId,name:p.name,emoji:p.emoji,price:p.price,qty:1})}U.vibrate();R.renderCart()},remove(productId){const i=this.items.findIndex(x=>x.productId===productId);if(i===-1)return;if(this.items[i].qty>1)this.items[i].qty--;else this.items.splice(i,1);R.renderCart()},clear(){this.items=[];R.renderCart()},total(){return U.round(this.items.reduce((s,i)=>s+i.price*i.qty,0))},count(){return this.items.reduce((s,i)=>s+i.qty,0)},setMethod(m){this.method=m;document.querySelectorAll('.pay-btn').forEach(b=>b.classList.toggle('on',b.dataset.m===m))}};
+const SYNC={_stream:null,_scanning:false,generateQR(){const payload=JSON.stringify({v:4,ts:Date.now(),cfg:DB.data.config,prod:DB.data.products,cat:DB.data.categories,sales:DB.data.sales,reg:DB.data.register});const encoded=btoa(encodeURIComponent(payload));const sizeKB=(encoded.length/1024).toFixed(1);U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">📱 QR de Sincronización</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="center"><div class="muted small mb12">Muestra este QR al otro dispositivo</div><div class="qr-box"><canvas id="qrCanvas"></canvas></div><div class="small muted mt8">Tamaño: ${sizeKB} KB</div></div><button class="btn btn-blue btn-block mt12" onclick="SYNC._shareCode('${encoded}')">📤 Compartir código</button><button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">Cerrar</button>`;U.$('overlay').classList.add('on');setTimeout(()=>{if(typeof QRCode==='undefined'){toast('Error: librería QR no disponible','err');return}QRCode.toCanvas(U.$('qrCanvas'),encoded,{width:260,margin:2,errorCorrectionLevel:'M'},err=>{if(err)toast('Error al generar QR','err')})},100)},_shareCode(encoded){if(navigator.share){navigator.share({title:'Chiringuito TPV - Sincronizar',text:'SYNC:'+encoded}).catch(()=>{})}else{navigator.clipboard?.writeText('SYNC:'+encoded).then(()=>toast('Código copiado')).catch(()=>toast('Copia manualmente','err'))}},scanQR(){this._scanning=false;U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">📷 Escanear QR</div><button class="modal-close" onclick="SYNC._stopScan();R.closeModal()">✕</button></div><div class="center"><video id="qrVideo" autoplay playsinline muted></video><canvas id="qrCanvas" style="display:none"></canvas><div id="scanMsg" class="muted small mt8">Preparando cámara...</div></div><input type="file" id="qrFileInput" accept="image/*" capture="environment" style="display:none" onchange="SYNC._processFile(this)"><button class="btn btn-blue btn-block mt12" onclick="U.$('qrFileInput').click()">📸 Usar foto de la galería</button><button class="btn btn-ghost btn-block mt8" onclick="SYNC._stopScan();R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on');this._startCamera()},async _startCamera(){try{this._scanning=true;const video=U.$('qrVideo');const canvas=U.$('qrCanvas');const ctx=canvas.getContext('2d');this._stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}});video.srcObject=this._stream;U.$('scanMsg').textContent='Apunta al QR...';const tick=()=>{if(!this._scanning)return;if(video.readyState===video.HAVE_ENOUGH_DATA){canvas.width=video.videoWidth;canvas.height=video.videoHeight;ctx.drawImage(video,0,0);const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);if(typeof jsQR!=='undefined'){const code=jsQR(imgData.data,canvas.width,canvas.height);if(code?.data){this._processData(code.data);return}}}requestAnimationFrame(tick)};video.onloadedmetadata=()=>requestAnimationFrame(tick)}catch(err){const msg=U.$('scanMsg');if(msg)msg.textContent='⚠️ Sin cámara — usa la foto'}},_stopScan(){this._scanning=false;if(this._stream){this._stream.getTracks().forEach(t=>t.stop());this._stream=null}},_processFile(input){const file=input.files[0];if(!file)return;const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;canvas.getContext('2d').drawImage(img,0,0);const imgData=canvas.getContext('2d').getImageData(0,0,img.width,img.height);if(typeof jsQR==='undefined'){toast('Error: librería QR no disponible','err');return}const code=jsQR(imgData.data,img.width,img.height);if(code?.data)this._processData(code.data);else toast('No se detectó QR','err')};img.src=URL.createObjectURL(file)},_processData(raw){this._stopScan();try{const encoded=raw.startsWith('SYNC:')?raw.slice(5):raw;const json=decodeURIComponent(atob(encoded));const data=JSON.parse(json);if(data.v!==4)throw new Error('Versión incompatible');const myId=DB.data.config.deviceId;if(data.cat)DB.data.categories=data.cat;if(data.prod)DB.data.products=data.prod;if(data.sales)Object.assign(DB.data.sales,data.sales);if(data.cfg){Object.assign(DB.data.config,data.cfg);DB.data.config.deviceId=myId}if(data.reg)DB.data.register=data.reg;DB.data.syncLog.push({ts:Date.now(),from:data.cfg?.deviceId||'?'});DB.save();DB._applyTheme();DB._applyHeader();R.renderAll();R.closeModal();toast('Sincronización completada ✓')}catch(err){toast('Error: '+err.message,'err')}}};
+const EMOJIS=['🍺','🍷','🍹','🍸','🥤','💧','☕','🧃','🍔','🌭','🍟','🍕','🥗','🥖','🌮','🍤','🦑','🐟','🥩','🍗','🧀','🫒','🍦','🧁','🍰','🍩','🍿','🥜','🧴','🏖️','⛱️','📦','🧊','🥥','🍋','🍊','🫐','🌴','🍌'];
+let _selectedCat='all';
+const R={renderAll(){this.renderVenta()},renderVenta(){this._renderCatTabs();this._renderProdGrid();this.renderCart()},searchDebounce(){clearTimeout(_searchTimer);_searchTimer=setTimeout(()=>this._renderProdGrid(),180)},_renderCatTabs(){const cats=Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));let h=`<button class="tab ${_selectedCat==='all'?'on':''}" onclick="_selectedCat='all';R._renderProdGrid()">📋 Todo</button>`;cats.forEach(c=>{h+=`<button class="tab ${_selectedCat===c.id?'on':''}" onclick="_selectedCat='${c.id}';R._renderProdGrid()">${U.esc(c.emoji)} ${U.esc(c.name)}</button>`});U.$('catTabs').innerHTML=h},_renderProdGrid(){const q=(U.$('searchInput')?.value||'').toLowerCase().trim();const stockOn=DB.data.config.stockEnabled;const prods=Object.values(DB.data.products).filter(p=>{if(_selectedCat!=='all'&&p.cat!==_selectedCat)return false;if(q&&!p.name.toLowerCase().includes(q))return false;return true}).sort((a,b)=>a.name.localeCompare(b.name,'es'));if(!prods.length){U.$('prodGrid').innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📦</div>No hay productos</div>';return}U.$('prodGrid').innerHTML=prods.map(p=>{const hasStock=stockOn&&p.stock!==null&&p.stock!==undefined;const out=hasStock&&p.stock<=0;const low=hasStock&&p.stock>0&&p.stock<=5;return`<button class="pcard${out?' out':''}" onclick="CART.add('${p.id}')">${hasStock?`<span class="stock-badge${low?' low':''}">${out?'✕':p.stock}</span>`:''}<span class="pcard-emoji">${U.esc(p.emoji||'📦')}</span><span class="pcard-name">${U.esc(p.name)}</span><span class="pcard-price">${U.money(p.price)}</span></button>`}).join('')},renderCart(){const area=U.$('cartArea');if(!CART.items.length){area.innerHTML='<div class="empty"><div class="empty-icon">🛒</div>Toca un producto para empezar</div>';return}const itemsHTML=CART.items.map(i=>`<div class="cart-item"><div class="cart-name">${U.esc(i.emoji)} ${U.esc(i.name)}</div><div class="cart-qty"><button class="qty-btn" onclick="CART.remove('${i.productId}')" style="color:var(--red)">−</button><strong>${i.qty}</strong><button class="qty-btn" onclick="CART.add('${i.productId}')" style="color:var(--green)">+</button></div><div class="cart-price">${U.money(i.price*i.qty)}</div></div>`).join('');const m=CART.method;area.innerHTML=`<div class="cart"><div class="row-between mb8"><div class="bold">🧾 Ticket <span style="background:var(--accent);color:#fff;border-radius:50%;padding:2px 8px;font-size:.7rem;margin-left:4px">${CART.count()}</span></div><button style="color:var(--red);font-size:.82rem;font-weight:700" onclick="CART.clear()">Vaciar</button></div>${itemsHTML}<div class="cart-total"><span class="cart-total-label">TOTAL</span><span class="cart-total-amount">${U.money(CART.total())}</span></div><div class="pay-row"><button class="pay-btn ${m==='efectivo'?'on':''}" data-m="efectivo" onclick="CART.setMethod('efectivo')"><span>💵</span>Efectivo</button><button class="pay-btn ${m==='tarjeta'?'on':''}" data-m="tarjeta" onclick="CART.setMethod('tarjeta')"><span>💳</span>Tarjeta</button><button class="pay-btn ${m==='bizum'?'on':''}" data-m="bizum" onclick="CART.setMethod('bizum')"><span>📱</span>Bizum</button></div><button class="btn btn-green btn-block btn-lg mt12" onclick="R.handleCobrar()">✅ COBRAR ${U.money(CART.total())}</button></div>`},handleCobrar(){if(!CART.items.length)return;if(!DB.data.register.isOpen){toast('Abre la caja primero','err');NAV.go('caja');return}if(CART.method==='efectivo')this._openCashModal();else this._finalizeSale(0,0)},_openCashModal(){const total=CART.total();const quicks=[total,5,10,20,50,100,200];const btns=quicks.map(v=>`<button class="cash-qbtn" onclick="R._setCash(${v})">${v===total?'Exacto':U.money(v)}</button>`).join('');U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">💵 Pago en Efectivo</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="center mb12">Total: <strong class="accent" style="font-size:1.4rem">${U.money(total)}</strong></div><div class="cash-quick">${btns}</div><div class="field"><label class="label">Importe entregado</label><input class="ipt ipt-lg" id="cashGivenInput" type="number" step="0.01" min="0" placeholder="0,00" oninput="R._calcChange()"></div><div class="change-box" id="changeBox" style="display:none"><div class="change-label">CAMBIO</div><div class="change-amount" id="changeVal">0,00 €</div></div><button class="btn btn-green btn-block btn-lg mt8" id="btnConfirmCash" disabled onclick="R._confirmCash()">✅ Confirmar Pago</button><button class="btn btn-ghost btn-block mt8" style="color:var(--red)" onclick="R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on')},_setCash(v){U.$('cashGivenInput').value=v;this._calcChange()},_calcChange(){const total=CART.total();const given=Number(U.$('cashGivenInput').value)||0;const change=U.round(given-total);const ok=given>=total;U.$('changeBox').style.display=ok?'block':'none';if(ok)U.$('changeVal').textContent=U.money(change);U.$('btnConfirmCash').disabled=!ok},_confirmCash(){const total=CART.total();const given=Number(U.$('cashGivenInput').value)||0;if(given<total){toast('Importe insuficiente','err');return}this.closeModal();this._finalizeSale(given,U.round(given-total))},_finalizeSale(given,change){const total=CART.total();const sale={items:CART.items.map(i=>({productId:i.productId,name:i.name,emoji:i.emoji,price:i.price,qty:i.qty,subtotal:U.round(i.price*i.qty)})),total,method:CART.method,given:U.round(given),change:U.round(change),date:U.todayStr(),time:U.timeShort(),timestamp:Date.now(),sessionId:DB.data.register.sessionId||'',deviceId:DB.data.config.deviceId};DB.addSale(sale);this._showTicket(sale);CART.clear();U.vibrate();toast('Venta: '+U.money(total))},_showTicket(sale){const ml={efectivo:'💵 Efectivo',tarjeta:'💳 Tarjeta',bizum:'📱 Bizum'};const lines=sale.items.map(i=>`<div class="ticket-line"><span>${i.qty}x ${U.esc(i.name)}</span><span>${U.money(i.subtotal)}</span></div>`).join('');const cashExtra=sale.method==='efectivo'?`<div class="ticket-dash"></div><div class="ticket-line"><span>Entregado</span><span>${U.money(sale.given)}</span></div><div class="ticket-line"><span>Cambio</span><span style="color:#16a34a;font-weight:800">${U.money(sale.change)}</span></div>`:'';U.$('ticketBox').innerHTML=`<div class="modal-head"><div class="modal-title">✅ Venta registrada</div><button class="modal-close" onclick="R.closeTicket()">✕</button></div><div class="ticket"><div class="ticket-center"><strong style="font-size:1.05rem">${U.esc(DB.data.config.businessEmoji)} ${U.esc(DB.data.config.businessName)}</strong><div style="color:#888;font-size:.76rem;margin-top:3px">${sale.date} ${sale.time}</div></div><div class="ticket-dash"></div>${lines}${cashExtra}<div class="ticket-dash"></div><div class="ticket-line ticket-total"><span>TOTAL</span><span>${U.money(sale.total)}</span></div><div class="ticket-dash"></div><div class="ticket-center" style="color:#888;font-size:.74rem">${ml[sale.method]}<br>¡Gracias por su visita! 🌊</div></div><button class="btn btn-green btn-block btn-lg" onclick="R.closeTicket()">👍 Nueva venta</button>`;U.$('ticketOverlay').classList.add('on')},closeTicket(){U.$('ticketOverlay').classList.remove('on')},renderProductsList(){const prods=Object.values(DB.data.products).sort((a,b)=>a.name.localeCompare(b.name,'es'));if(!prods.length){U.$('prodList').innerHTML='<div class="empty">No hay productos</div>';return}const stockOn=DB.data.config.stockEnabled;U.$('prodList').innerHTML=prods.map(p=>{const catName=DB.data.categories[p.cat]?.name||'Sin categoría';const stockTxt=stockOn&&p.stock!==null?` · Stock: ${p.stock}`:'';return`<div class="list-item"><div class="list-item-icon">${U.esc(p.emoji||'📦')}</div><div class="list-item-body"><div class="list-item-title">${U.esc(p.name)}</div><div class="list-item-sub">${U.esc(catName)}${stockTxt} · ${U.money(p.price)}</div></div><div class="list-item-actions"><button class="icon-btn" onclick="R.openProductModal('${p.id}')">✏️</button><button class="icon-btn" style="color:var(--red)" onclick="R.deleteProduct('${p.id}')">🗑️</button></div></div>`}).join('')},renderCategoriesList(){const cats=Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));if(!cats.length){U.$('catList').innerHTML='<div class="empty small">Sin categorías</div>';return}U.$('catList').innerHTML=cats.map(c=>`<div class="list-item"><div class="list-item-icon">${U.esc(c.emoji)}</div><div class="list-item-body"><div class="list-item-title">${U.esc(c.name)}</div></div><button class="icon-btn" style="color:var(--red)" onclick="R.deleteCategory('${c.id}')">🗑️</button></div>`).join('')},openProductModal(editId=null){const p=editId?DB.data.products[editId]:null;const cats=Object.values(DB.data.categories).sort((a,b)=>(a.order||0)-(b.order||0));const catOpts='<option value="">Seleccionar...</option>'+cats.map(c=>`<option value="${c.id}" ${p?.cat===c.id?'selected':''}>${c.emoji} ${c.name}</option>`).join('');const stockOn=DB.data.config.stockEnabled;const emojiGrid=EMOJIS.map(e=>`<button class="emoji-opt ${p?.emoji===e?'on':''}" onclick="R._pickEmoji(this,'${e}','pEmojiVal')">${e}</button>`).join('');U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">${editId?'✏️ Editar':'➕ Nuevo'} producto</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="field"><label class="label">Nombre</label><input class="ipt" id="pName" value="${U.esc(p?.name||'')}" placeholder="Ej: Cerveza"></div><div class="field"><label class="label">Precio (${DB.data.config.currency})</label><input class="ipt" id="pPrice" type="number" step="0.01" min="0" value="${p?.price??''}" placeholder="0.00"></div><div class="field"><label class="label">Categoría</label><select class="ipt" id="pCat">${catOpts}</select></div>${stockOn?`<div class="field"><label class="label">Stock (vacío = ilimitado)</label><input class="ipt" id="pStock" type="number" min="0" value="${p?.stock!==null&&p?.stock!==undefined?p.stock:''}" placeholder="Opcional"></div>`:''}<div class="field"><label class="label">Icono</label><input type="hidden" id="pEmojiVal" value="${p?.emoji||'📦'}"><div class="emoji-grid">${emojiGrid}</div></div><button class="btn btn-accent btn-block btn-lg mt8" onclick="R.saveProduct('${editId||''}')">${editId?'💾 Guardar':'➕ Crear'}</button><button class="btn btn-ghost btn-block mt8" style="color:var(--red)" onclick="R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on')},saveProduct(editId){const name=U.$('pName').value.trim();const price=U.round(U.$('pPrice').value);const cat=U.$('pCat').value;const emoji=U.$('pEmojiVal').value||'📦';const si=U.$('pStock');const stock=si?(si.value.trim()===''?null:Math.max(0,parseInt(si.value)||0)):null;if(!name||!cat||price<=0){toast('Rellena nombre, precio y categoría','err');return}const prod={name,price,cat,emoji,stock};if(editId)DB.updateProduct(editId,prod);else DB.addProduct(prod);this.closeModal();this.renderProductsList();this.renderVenta();toast(editId?'Producto actualizado':'Producto creado')},deleteProduct(id){if(!confirm(`¿Eliminar "${DB.data.products[id]?.name}"?`))return;DB.deleteProduct(id);this.renderProductsList();this.renderVenta();toast('Producto eliminado')},openCategoryModal(){const emojiGrid=EMOJIS.slice(0,20).map(e=>`<button class="emoji-opt" onclick="R._pickEmoji(this,'${e}','cEmojiVal')">${e}</button>`).join('');U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">➕ Nueva categoría</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="field"><label class="label">Nombre</label><input class="ipt" id="cName" placeholder="Ej: Bebidas"></div><div class="field"><label class="label">Icono</label><input type="hidden" id="cEmojiVal" value="📁"><div class="emoji-grid">${emojiGrid}</div></div><button class="btn btn-accent btn-block btn-lg mt8" onclick="R.saveCategory()">Crear categoría</button><button class="btn btn-ghost btn-block mt8" style="color:var(--red)" onclick="R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on')},saveCategory(){const name=U.$('cName').value.trim();const emoji=U.$('cEmojiVal').value||'📁';if(!name){toast('Escribe un nombre','err');return}DB.addCategory({name,emoji,order:Object.keys(DB.data.categories).length+1});this.closeModal();this.renderCategoriesList();this.renderVenta();toast('Categoría creada')},deleteCategory(id){if(!confirm('¿Eliminar esta categoría?'))return;DB.deleteCategory(id);this.renderCategoriesList();this.renderVenta();toast('Categoría eliminada')},_pickEmoji(btn,emoji,hiddenId){btn.parentElement.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');U.$(hiddenId).value=emoji},renderHistorial(){const date=U.$('histDate').value||U.todayStr();const sales=Object.values(DB.data.sales).filter(s=>s.date===date).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));let total=0,cash=0,card=0,bizum=0;const prodMap={};sales.forEach(s=>{total+=s.total;if(s.method==='efectivo')cash+=s.total;if(s.method==='tarjeta')card+=s.total;if(s.method==='bizum')bizum+=s.total;(s.items||[]).forEach(i=>{if(!prodMap[i.name])prodMap[i.name]={qty:0,total:0,emoji:i.emoji||'📦'};prodMap[i.name].qty+=i.qty;prodMap[i.name].total+=i.subtotal||(i.price*i.qty)})});const avg=sales.length?total/sales.length:0;U.$('statsArea').innerHTML=`<div class="stats"><div class="stat"><div class="stat-val green">${U.money(total)}</div><div class="stat-lbl">Ingresos</div></div><div class="stat"><div class="stat-val accent">${sales.length}</div><div class="stat-lbl">Tickets</div></div><div class="stat"><div class="stat-val yellow">${U.money(avg)}</div><div class="stat-lbl">Ticket medio</div></div><div class="stat"><div class="stat-val blue">${U.money(cash)}</div><div class="stat-lbl">Efectivo</div></div></div>`;const top=Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).slice(0,5);U.$('topArea').innerHTML=top.length?top.map(([n,d])=>`<div class="row-between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span>${d.emoji} ${U.esc(n)}</span><strong class="muted small">${d.qty} uds · ${U.money(d.total)}</strong></div>`).join(''):'<div class="muted center small">Sin datos</div>';if(!sales.length){U.$('salesArea').innerHTML='<div class="empty small">No hay ventas este día</div>';return}const pillCls={efectivo:'pill-cash',tarjeta:'pill-card',bizum:'pill-bizum'};const pillLbl={efectivo:'💵 Efectivo',tarjeta:'💳 Tarjeta',bizum:'📱 Bizum'};U.$('salesArea').innerHTML=sales.map(s=>{const items=(s.items||[]).map(i=>`${i.qty}x ${i.name}`).join(', ');const cashLine=s.method==='efectivo'?`<div class="muted small mt8">Entregado: ${U.money(s.given)} · Cambio: ${U.money(s.change)}</div>`:'';return`<div class="sale-card"><div class="sale-head"><span class="muted small">🕐 ${s.time}</span><strong class="green">${U.money(s.total)}</strong></div><div class="muted small">${U.esc(items)}</div><span class="pill ${pillCls[s.method]||''}">${pillLbl[s.method]||s.method}</span>${cashLine}</div>`}).join('')},renderCaja(){const reg=DB.data.register;U.$('cashStatusBar').innerHTML=`<div class="cash-status ${reg.isOpen?'open':'closed'}">${reg.isOpen?'🟢 CAJA ABIERTA':'🔒 CAJA CERRADA'}</div>`;U.$('btnOpenCash').disabled=reg.isOpen;U.$('btnCloseCash').disabled=!reg.isOpen;U.$('btnOpenCash').style.opacity=reg.isOpen?'.4':'1';U.$('btnCloseCash').style.opacity=!reg.isOpen?'.4':'1';let html='';if(reg.isOpen&&reg.sessionId){const sales=Object.values(DB.data.sales).filter(s=>s.sessionId===reg.sessionId);let t=0,c=0,ca=0,b=0;sales.forEach(s=>{t+=s.total;if(s.method==='efectivo')c+=s.total;if(s.method==='tarjeta')ca+=s.total;if(s.method==='bizum')b+=s.total});const exp=U.round(reg.initialCash+c);html=`<div class="glass"><div class="bold mb8">📊 Sesión actual</div><div class="cash-row"><span class="muted">Efectivo inicial</span><strong>${U.money(reg.initialCash)}</strong></div><div class="cash-row"><span class="muted">Nº tickets</span><strong>${sales.length}</strong></div><div class="cash-row"><span class="muted">Total ventas</span><strong class="green">${U.money(t)}</strong></div><div class="cash-row"><span class="muted">💵 Efectivo</span><strong>${U.money(c)}</strong></div><div class="cash-row"><span class="muted">💳 Tarjeta</span><strong>${U.money(ca)}</strong></div><div class="cash-row"><span class="muted">📱 Bizum</span><strong>${U.money(b)}</strong></div><div class="cash-row"><span class="muted">💰 Esperado en caja</span><strong class="yellow">${U.money(exp)}</strong></div></div>`}const closed=Object.values(DB.data.sessions).filter(s=>s.status==='closed').sort((a,b)=>(b.closedAt||0)-(a.closedAt||0));if(closed.length){const lc=closed[0];const dc=lc.difference<0?'red':lc.difference>0?'green':'yellow';html+=`<div class="glass"><div class="bold mb8">📋 Último cierre</div><div class="cash-row"><span class="muted">Fecha</span><strong>${lc.closedDate} ${lc.closedTime}</strong></div><div class="cash-row"><span class="muted">Total ventas</span><strong>${U.money(lc.totalSales)}</strong></div><div class="cash-row"><span class="muted">Esperado</span><strong>${U.money(lc.expectedCash)}</strong></div><div class="cash-row"><span class="muted">Real contado</span><strong>${U.money(lc.actualCash)}</strong></div><div class="cash-row"><span class="muted">Diferencia</span><strong class="${dc}">${U.money(lc.difference)}</strong></div></div>`}U.$('cashDetails').innerHTML=html||'<div class="empty small">Abre la caja para empezar</div>'},openCashOpenModal(){if(DB.data.register.isOpen){toast('La caja ya está abierta','err');return}U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">🔓 Apertura de caja</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="field"><label class="label">Efectivo inicial en caja (${DB.data.config.currency})</label><input class="ipt ipt-lg" id="initCash" type="number" step="0.01" min="0" placeholder="Ej: 100,00"></div><button class="btn btn-green btn-block btn-lg mt8" onclick="R._confirmOpenCash()">✅ Abrir caja</button><button class="btn btn-ghost btn-block mt8" style="color:var(--red)" onclick="R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on')},_confirmOpenCash(){const val=Number(U.$('initCash').value)||0;DB.openRegister(val);this.closeModal();this.renderCaja();toast('Caja abierta con '+U.money(val))},openCashCloseModal(){if(!DB.data.register.isOpen){toast('La caja ya está cerrada','err');return}const sid=DB.data.register.sessionId;const sales=Object.values(DB.data.sales).filter(s=>s.sessionId===sid);let cash=0;sales.forEach(s=>{if(s.method==='efectivo')cash+=s.total});const expected=U.round(DB.data.register.initialCash+cash);U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">🔒 Cierre de caja</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="glass" style="padding:10px 13px;margin-bottom:0"><div class="cash-row"><span class="muted">Efectivo inicial</span><strong>${U.money(DB.data.register.initialCash)}</strong></div><div class="cash-row"><span class="muted">Ventas en efectivo</span><strong>${U.money(cash)}</strong></div><div class="cash-row"><span class="muted">💰 Esperado</span><strong class="yellow">${U.money(expected)}</strong></div></div><div class="field mt12"><label class="label">Efectivo REAL contado en caja</label><input class="ipt ipt-lg" id="actualCash" type="number" step="0.01" min="0" placeholder="${expected}" oninput="R._calcDiff(${expected})"></div><div class="change-box" id="diffBox"><div class="change-label">DIFERENCIA</div><div class="change-amount" id="diffVal" style="color:var(--yellow)">—</div></div><button class="btn btn-red btn-block btn-lg mt8" onclick="R._confirmCloseCash(${expected})">🔒 Confirmar cierre</button><button class="btn btn-ghost btn-block mt8" onclick="R.closeModal()">Cancelar</button>`;U.$('overlay').classList.add('on')},_calcDiff(expected){const actual=Number(U.$('actualCash').value)||0;const diff=U.round(actual-expected);const el=U.$('diffVal');el.textContent=U.money(diff);el.style.color=diff<0?'var(--red)':diff>0?'var(--green)':'var(--yellow)'},_confirmCloseCash(expected){const actual=Number(U.$('actualCash').value);if(isNaN(actual)||actual<0){toast('Introduce el efectivo contado','err');return}const result=DB.closeRegister(actual);this.closeModal();this.renderCaja();if(result){const d=result.difference;toast(d===0?'Caja cuadrada ✅':d>0?'Sobran '+U.money(d):'Faltan '+U.money(Math.abs(d)),d===0?'ok':'err')}},renderConfig(){const cfg=DB.data.config;const themes=[{id:'dark',name:'🌙 Oscuro',colors:['#0f172a','#1e293b','#f43f5e','#10b981']},{id:'light',name:'☀️ Claro',colors:['#f8fafc','#e2e8f0','#e11d48','#059669']},{id:'beach',name:'🏖️ Playa',colors:['#0a0e27','#1a1f3a','#ff6b35','#06d6a0']},{id:'sunset',name:'🌅 Atardecer',colors:['#1c1917','#292524','#f97316','#84cc16']}];const themeCards=themes.map(t=>{const bars=t.colors.map(c=>`<span style="background:${c}"></span>`).join('');return`<button class="theme-card ${cfg.theme===t.id?'on':''}" onclick="R._setTheme('${t.id}')"><div class="theme-preview">${bars}</div>${t.name}</button>`}).join('');const syncCount=DB.data.syncLog?.length||0;const lastSync=syncCount?new Date(DB.data.syncLog[syncCount-1].ts).toLocaleString('es-ES'):'Nunca';U.$('configArea').innerHTML=`<div class="setting-item"><div class="setting-icon">🏪</div><div class="setting-body"><div class="setting-title">Nombre del negocio</div><div class="setting-desc">${U.esc(cfg.businessName)}</div></div><button class="btn btn-outline btn-sm" onclick="R._editName()">Cambiar</button></div><div class="setting-item"><div class="setting-icon">${cfg.businessEmoji}</div><div class="setting-body"><div class="setting-title">Icono del negocio</div></div><button class="btn btn-outline btn-sm" onclick="R._editEmoji()">Cambiar</button></div><div class="setting-item"><div class="setting-icon">💱</div><div class="setting-body"><div class="setting-title">Moneda</div><div class="setting-desc">${U.esc(cfg.currency)}</div></div><button class="btn btn-outline btn-sm" onclick="R._editCurrency()">Cambiar</button></div><div class="setting-item"><div class="setting-icon">📦</div><div class="setting-body"><div class="setting-title">Control de stock</div><div class="setting-desc">${cfg.stockEnabled?'Activado':'Desactivado'}</div></div><div class="toggle ${cfg.stockEnabled?'on':''}" onclick="R._toggleStock()"></div></div><div class="setting-item"><div class="setting-icon">📲</div><div class="setting-body"><div class="setting-title">Instalar como app</div><div class="setting-desc">Añadir a la pantalla de inicio</div></div><button class="btn btn-accent btn-sm" onclick="PWA.install()">Instalar</button></div><div class="pg-subtitle mt16">🎨 Tema visual</div><div class="theme-grid">${themeCards}</div><div class="pg-subtitle mt16">📡 Sincronización</div><div class="setting-item"><div class="setting-icon">📱</div><div class="setting-body"><div class="setting-title">ID de este dispositivo</div><div class="setting-desc">${cfg.deviceId}</div></div></div><div class="setting-item"><div class="setting-icon">🔄</div><div class="setting-body"><div class="setting-title">Última sincronización</div><div class="setting-desc">${lastSync}</div></div><button class="btn btn-outline btn-sm" onclick="NAV.go('sync')">Ir</button></div><div class="pg-subtitle mt16">🗄️ Datos</div><div class="setting-item"><div class="setting-icon">📥</div><div class="setting-body"><div class="setting-title">Exportar Excel</div><div class="setting-desc">Descargar toda la base de datos</div></div><button class="btn btn-outline btn-sm" onclick="DB.exportExcel()">Exportar</button></div><div class="setting-item"><div class="setting-icon">📂</div><div class="setting-body"><div class="setting-title">Importar Excel</div><div class="setting-desc">Restaurar desde archivo</div></div><button class="btn btn-outline btn-sm" onclick="DB.importExcel()">Importar</button></div><div class="setting-item" style="border:1.5px solid var(--red)"><div class="setting-icon">⚠️</div><div class="setting-body"><div class="setting-title red">Borrar todos los datos</div><div class="setting-desc">Acción irreversible</div></div><button class="btn btn-red btn-sm" onclick="R._resetApp()">Borrar</button></div><div class="center muted small mt16" style="padding-bottom:8px">Chiringuito TPV v4.0<br>Guardado automático</div>`},_setTheme(t){DB.data.config.theme=t;DB.save();DB._applyTheme();this.renderConfig()},_toggleStock(){DB.data.config.stockEnabled=!DB.data.config.stockEnabled;DB.save();this.renderConfig();this.renderVenta();toast(DB.data.config.stockEnabled?'Stock activado':'Stock desactivado')},_editName(){const n=prompt('Nombre del negocio:',DB.data.config.businessName);if(n&&n.trim()){DB.data.config.businessName=n.trim();DB.save();DB._applyHeader();this.renderConfig()}},_editEmoji(){const emojis=['🏖️','🍹','🌊','☀️','⛱️','🐚','🦀','🌴','🍺','🍔','🏪','🎵','🍕','🥂','🌅','🎪'];U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">Icono del negocio</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="emoji-grid">${emojis.map(e=>`<button class="emoji-opt" onclick="R._setBizEmoji('${e}')">${e}</button>`).join('')}</div>`;U.$('overlay').classList.add('on')},_setBizEmoji(e){DB.data.config.businessEmoji=e;DB.save();DB._applyHeader();this.closeModal();this.renderConfig()},_editCurrency(){const cs=['€','$','£','¥','CHF','MXN','ARS','COP','PEN'];U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">Moneda</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">${cs.map(c=>`<button class="btn btn-outline btn-sm" onclick="R._setCurrency('${c}')">${c}</button>`).join('')}</div>`;U.$('overlay').classList.add('on')},_setCurrency(c){DB.data.config.currency=c;DB.save();this.closeModal();this.renderConfig();this.renderVenta();toast('Moneda: '+c)},_resetApp(){if(!confirm('¿BORRAR TODOS LOS DATOS? Esta acción no se puede deshacer.'))return;if(!confirm('Segunda confirmación: ¿Estás seguro?'))return;localStorage.removeItem(DB_KEY);location.reload()},showIOSInstallModal(){U.$('modalBox').innerHTML=`<div class="modal-head"><div class="modal-title">📲 Instalar en iPhone</div><button class="modal-close" onclick="R.closeModal()">✕</button></div><div class="center" style="padding:10px 0;line-height:1.8;font-size:.9rem"><div style="font-size:2rem;margin-bottom:12px">📱</div><strong>Sigue estos pasos en Safari:</strong><br><br>1. Toca el botón <strong>⬆️ Compartir</strong><br>(parte inferior de la pantalla)<br><br>2. Desplázate hacia abajo<br><br>3. Toca <strong>"Añadir a pantalla de inicio"</strong><br><br>4. Ponle nombre y toca <strong>"Añadir"</strong><br><br><div class="muted small">⚠️ Debe hacerse desde Safari, no Chrome</div></div><button class="btn btn-green btn-block btn-lg" onclick="R.closeModal()">Entendido</button>`;U.$('overlay').classList.add('on')},closeModal(){U.$('overlay').classList.remove('on')},closeModalOutside(e){if(e.target===U.$('overlay'))this.closeModal()}};
+PWA.init();
+DB.load();
+R.renderAll();
+U.$('histDate').value=U.todayStr();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(()=>console.log('Service Worker registrado')).catch(err=>console.log('Error Service Worker:',err))})}
+</script>
+</body>
+</html>
